@@ -70,12 +70,12 @@ export default function Sidebar() {
       {/* Bottom */}
       <div className="mt-auto flex flex-col gap-2">
         {/* Language switcher */}
-        <div className="flex items-center gap-1 px-2 mb-1">
-          {(["tr", "en"] as Lang[]).map((l) => (
+        <div className="grid grid-cols-4 gap-1 px-2 mb-1">
+          {(["tr", "en", "es", "fr"] as Lang[]).map((l) => (
             <button
               key={l}
               onClick={() => setLang(l)}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+              className={`py-1.5 text-xs font-bold rounded-lg transition-colors ${
                 lang === l
                   ? "bg-primary text-white"
                   : "text-outline hover:bg-surface-container-lowest"
