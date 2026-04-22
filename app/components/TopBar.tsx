@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { useI18n } from "../lib/i18n";
 
 interface TopBarProps {
   title?: string;
@@ -11,6 +12,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ title, search, onSearch }: TopBarProps) {
+  const { t } = useI18n();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -31,9 +33,17 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
     .toUpperCase();
 
   const notifications = [
-    { icon: "warning", color: "text-error", text: "Check patients with Critical status.", time: "2m ago" },
-    { icon: "auto_awesome", color: "text-secondary", text: "AI analysis ready to run on new uploads.", time: "18m ago" },
-    { icon: "trending_up", color: "text-primary", text: "New measurement data available for review.", time: "1h ago" },
+    { icon: "warning", color: "text-error", text: t.topbar.notif1, time: "2m" },
+    { icon: "auto_awesome", color: "text-secondary", text: t.topbar.notif2, time: "18m" },
+    { icon: "trending_up", color: "text-primary", text: t.topbar.notif3, time: "1h" },
+  ];
+
+  const settingsItems = [
+    { icon: "person", label: t.topbar.profile },
+    { icon: "palette", label: t.topbar.appearance },
+    { icon: "privacy_tip", label: t.topbar.privacy },
+    { icon: "notifications", label: t.topbar.notifPrefs },
+    { icon: "help", label: t.topbar.helpSupport },
   ];
 
   return (
@@ -48,7 +58,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
               <input
                 className="w-full bg-surface-container-low border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-                placeholder="Search patients..."
+                placeholder={t.topbar.search}
                 value={search ?? ""}
                 onChange={(e) => onSearch?.(e.target.value)}
               />
@@ -71,9 +81,9 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
               {showNotifications && (
                 <div className="absolute top-full mt-2 right-0 w-80 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-xl z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-outline-variant/10 flex items-center justify-between">
-                    <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Notifications</p>
+                    <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{t.topbar.notifications}</p>
                     <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full" style={{ fontFamily: "Inter, sans-serif" }}>
-                      {notifications.length} new
+                      {notifications.length} {t.topbar.new}
                     </span>
                   </div>
                   {notifications.map((n, i) => (
@@ -86,7 +96,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
                     </div>
                   ))}
                   <button onClick={() => setShowNotifications(false)} className="w-full py-3 text-xs text-primary font-bold hover:bg-surface-container-low transition-colors" style={{ fontFamily: "Inter, sans-serif" }}>
-                    MARK ALL AS READ
+                    {t.topbar.markAllRead}
                   </button>
                 </div>
               )}
@@ -102,13 +112,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
               </button>
               {showSettings && (
                 <div className="absolute top-full mt-2 right-0 w-52 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-xl z-50 py-1.5">
-                  {[
-                    { icon: "person", label: "Profile Settings" },
-                    { icon: "palette", label: "Appearance" },
-                    { icon: "privacy_tip", label: "Privacy & Security" },
-                    { icon: "notifications", label: "Notification Prefs" },
-                    { icon: "help", label: "Help & Support" },
-                  ].map((item) => (
+                  {settingsItems.map((item) => (
                     <button key={item.label} onClick={() => setShowSettings(false)} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors">
                       <span className="material-symbols-outlined text-outline text-base" style={{ fontSize: "18px" }}>{item.icon}</span>
                       {item.label}
@@ -122,7 +126,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
           <div className="flex items-center gap-3 pl-4 border-l border-outline-variant/20">
             <div className="text-right">
               <p className="text-sm font-semibold text-on-surface leading-none" style={{ fontFamily: "Manrope, sans-serif" }}>{displayName}</p>
-              <p className="text-[10px] text-outline uppercase tracking-wider mt-0.5" style={{ fontFamily: "Inter, sans-serif" }}>Clinical Director</p>
+              <p className="text-[10px] text-outline uppercase tracking-wider mt-0.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.topbar.clinicalDirector}</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm cursor-pointer hover:bg-primary/30 transition-colors">
               {initials}

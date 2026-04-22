@@ -11,12 +11,14 @@ import { useToast } from "../lib/useToast";
 import { useAuth } from "../lib/useAuth";
 import { getPatients, createPatient } from "../lib/db";
 import { statusStyles, trendBarColor, trendTextColor, type Status, type Patient } from "../lib/data";
+import { useI18n } from "../lib/i18n";
 
 const PAGE_SIZE = 5;
 const ALL_STATUSES: Status[] = ["Active", "Maintenance", "Critical", "Inactive"];
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const { user, loading: authLoading } = useAuth();
   const { toasts, addToast, remove } = useToast();
 
@@ -101,9 +103,9 @@ export default function DashboardPage() {
           <div className="flex justify-between items-start mb-12">
             <div>
               <h2 className="text-3xl font-bold tracking-tight text-on-background mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
-                Patient Directory
+                {t.dashboard.title}
               </h2>
-              <p className="text-outline text-sm">Manage clinical consultations and nutritional records.</p>
+              <p className="text-outline text-sm">{t.nav.clients}</p>
             </div>
             <div className="flex gap-3">
               <div className="relative">
@@ -112,7 +114,7 @@ export default function DashboardPage() {
                   className="px-5 py-2 text-sm bg-surface-container-low text-on-surface font-medium rounded-lg hover:bg-surface-container-high transition-colors flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-base">filter_list</span>
-                  {filterStatus === "All" ? "Filter Status" : filterStatus}
+                  {filterStatus === "All" ? t.dashboard.allStatuses : filterStatus}
                   {filterStatus !== "All" && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
                 </button>
                 {showFilter && (
@@ -139,7 +141,7 @@ export default function DashboardPage() {
                 className="px-5 py-2 text-sm bg-primary text-white font-semibold rounded-lg flex items-center gap-2 active:scale-95 transition-all"
               >
                 <span className="material-symbols-outlined text-sm">person_add</span>
-                New Client
+                {t.dashboard.addPatient}
               </button>
             </div>
           </div>
@@ -147,9 +149,9 @@ export default function DashboardPage() {
           {/* Stats */}
           <div className="grid grid-cols-4 gap-8 mb-16">
             {[
-              { label: "Active Patients", value: patients.filter((p) => p.status === "Active").length.toString() },
-              { label: "Total Patients", value: patients.length.toString() },
-              { label: "Critical", value: patients.filter((p) => p.status === "Critical").length.toString() },
+              { label: t.dashboard.active, value: patients.filter((p) => p.status === "Active").length.toString() },
+              { label: t.reports.totalPatients, value: patients.length.toString() },
+              { label: t.dashboard.critical, value: patients.filter((p) => p.status === "Critical").length.toString() },
               { label: "AI Confidence", value: "99.2%", highlight: true },
             ].map((stat) => (
               <div key={stat.label} className="p-2">
@@ -171,7 +173,7 @@ export default function DashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant/10">
-                  {["Client Identity", "Clinical Status", "Last Visit", "Metabolic Trend", "Actions"].map((col, i) => (
+                  {[t.dashboard.patient, t.dashboard.status, t.dashboard.lastVisit, t.dashboard.trend, ""].map((col, i) => (
                     <th
                       key={col}
                       className={`px-8 py-4 text-outline text-[10px] uppercase tracking-widest font-bold ${i === 4 ? "text-right" : ""}`}
@@ -195,8 +197,8 @@ export default function DashboardPage() {
                   <tr>
                     <td colSpan={5} className="px-8 py-16 text-center text-outline text-sm">
                       {patients.length === 0
-                        ? "No patients yet — add your first client!"
-                        : `No patients matching "${search}"`}
+                        ? t.dashboard.noPatients
+                        : `"${search}" — ${t.dashboard.noPatients}`}
                     </td>
                   </tr>
                 ) : (
@@ -303,7 +305,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-primary mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
-                  Metabolic Trend Detected
+                  {t.nav.aiAnalysis}
                 </h3>
                 <p className="text-[13px] text-on-surface-variant max-w-xl">
                   {patients.filter((p) => p.status === "Critical").length > 0
@@ -316,7 +318,7 @@ export default function DashboardPage() {
               onClick={() => router.push("/reports")}
               className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all active:scale-95"
             >
-              Generate Report
+              {t.nav.reports}
             </button>
           </div>
         </section>
@@ -324,12 +326,12 @@ export default function DashboardPage() {
 
       {/* New Patient Modal */}
       {showNewPatient && (
-        <Modal title="New Patient" onClose={() => setShowNewPatient(false)} size="md">
+        <Modal title={t.dashboard.addPatient} onClose={() => setShowNewPatient(false)} size="md">
           <form onSubmit={handleNewPatient} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
-                  First Name
+                  {t.dashboard.firstName}
                 </label>
                 <input
                   required
@@ -341,7 +343,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
-                  Last Name
+                  {t.dashboard.lastName}
                 </label>
                 <input
                   required
@@ -354,7 +356,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
-                Email
+                {t.dashboard.email}
               </label>
               <input
                 type="email"
@@ -368,7 +370,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
-                  Age
+                  {t.dashboard.age}
                 </label>
                 <input
                   type="number"
@@ -383,7 +385,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>
-                  Protocol
+                  {t.dashboard.protocol}
                 </label>
                 <select
                   value={newPatient.protocol}
@@ -403,7 +405,7 @@ export default function DashboardPage() {
                 onClick={() => setShowNewPatient(false)}
                 className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors"
               >
-                Cancel
+                {t.dashboard.cancel}
               </button>
               <button
                 type="submit"
@@ -415,10 +417,10 @@ export default function DashboardPage() {
                     <span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>
                       progress_activity
                     </span>
-                    Adding...
+                    {t.dashboard.adding}
                   </>
                 ) : (
-                  "Add Patient"
+                  t.dashboard.add
                 )}
               </button>
             </div>

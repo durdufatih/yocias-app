@@ -12,6 +12,7 @@ import { useAuth } from "../../lib/useAuth";
 import { getPatient, getMeasurements, addMeasurement, deleteMeasurement, updatePatient, getBodyAnalyses } from "../../lib/db";
 import type { BodyAnalysis, BodyAnalysisData } from "../../lib/db";
 import type { Patient, Measurement } from "../../lib/data";
+import { useI18n } from "../../lib/i18n";
 
 /* ─── Measurement Detail Modal ──────────────────────────────────────── */
 function DetailRow({ label, value, unit }: { label: string; value: number | string | null | undefined; unit?: string }) {
@@ -86,7 +87,7 @@ function BodyAnalysisDetail({ data }: { data: BodyAnalysisData }) {
 }
 
 /* ─── SVG Line Chart ────────────────────────────────────────────────── */
-function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
+function WeightChart({ data, noDataLabel }: { data: { date: string; weight: number }[]; noDataLabel: string }) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   if (data.length === 0) {
@@ -94,7 +95,7 @@ function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
       <div className="h-48 flex items-center justify-center">
         <div className="text-center">
           <span className="material-symbols-outlined text-outline text-4xl block mb-2">show_chart</span>
-          <p className="text-sm text-outline">No measurements yet — log data to see the trend.</p>
+          <p className="text-sm text-outline">{noDataLabel}</p>
         </div>
       </div>
     );
@@ -166,6 +167,7 @@ function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
 export default function PatientProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useI18n();
   const { loading: authLoading } = useAuth();
   const { toasts, addToast, remove } = useToast();
 
@@ -347,7 +349,7 @@ export default function PatientProfilePage() {
             <div className="lg:col-span-3 bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Weight Trend</h2>
+                  <h2 className="text-lg font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{t.client.weightTrend}</h2>
                   <div className="flex items-center gap-3 mt-0.5">
                     {latestWeight ? (
                       <>
@@ -359,7 +361,7 @@ export default function PatientProfilePage() {
                         )}
                       </>
                     ) : (
-                      <p className="text-xs text-outline">No measurements logged yet</p>
+                      <p className="text-xs text-outline">{t.client.noMeasurements}</p>
                     )}
                   </div>
                 </div>
@@ -375,7 +377,7 @@ export default function PatientProfilePage() {
                   </div>
                 </div>
               </div>
-              <WeightChart data={chartPoints} />
+              <WeightChart data={chartPoints} noDataLabel={t.client.noMeasurements} />
             </div>
 
             {/* AI Insight */}
@@ -386,10 +388,10 @@ export default function PatientProfilePage() {
               </div>
               <p className="text-sm text-on-surface leading-relaxed flex-1">
                 {patient.status === "Critical"
-                  ? <><span className="font-bold text-error">Immediate attention required.</span> Elevated inflammatory markers detected.</>
+                  ? <><span className="font-bold text-error">{t.client.immediateAttention}</span> {t.client.elevatedMarkers}</>
                   : measurements.length >= 2
-                  ? <><span className="font-bold">Progress on track.</span> Consistent improvements over the last {measurements.length} sessions.</>
-                  : <><span className="font-bold">Baseline established.</span> Log more measurements to unlock AI trend analysis.</>}
+                  ? <><span className="font-bold">{t.client.progressOnTrack}</span> {t.client.consistentProgress}</>
+                  : <><span className="font-bold">{t.client.baselineEstablished}</span> {t.client.logMoreMeasurements}</>}
               </p>
               {measurements.length >= 2 && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -412,7 +414,7 @@ export default function PatientProfilePage() {
                 </div>
               </div>
               <button onClick={() => router.push("/ai-analysis")} className="mt-4 w-full py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg hover:bg-secondary/20 transition-colors">
-                Run AI Analysis →
+                {t.client.runAiAnalysis}
               </button>
             </div>
           </div>
@@ -421,11 +423,11 @@ export default function PatientProfilePage() {
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/10 overflow-hidden">
             <div className="p-6 flex justify-between items-center border-b border-outline-variant/10">
               <div>
-                <h2 className="text-lg font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>Measurement History</h2>
-                <p className="text-xs text-outline mt-0.5">{measurements.length} records</p>
+                <h2 className="text-lg font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{t.client.measurementHistory}</h2>
+                <p className="text-xs text-outline mt-0.5">{measurements.length} {t.client.records}</p>
               </div>
               <button onClick={() => setShowLogData(true)} className="bg-primary text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-transform active:scale-95" style={{ fontFamily: "Manrope, sans-serif" }}>
-                <span className="material-symbols-outlined text-sm">add</span> Log Data
+                <span className="material-symbols-outlined text-sm">add</span> {t.client.logData}
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -442,8 +444,8 @@ export default function PatientProfilePage() {
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
                         <span className="material-symbols-outlined text-outline text-4xl mb-3 block">table_chart</span>
-                        <p className="text-sm text-outline mb-3">No measurements logged yet.</p>
-                        <button onClick={() => setShowLogData(true)} className="text-xs font-bold text-primary hover:underline">Log the first measurement →</button>
+                        <p className="text-sm text-outline mb-3">{t.client.noMeasurements}</p>
+                        <button onClick={() => setShowLogData(true)} className="text-xs font-bold text-primary hover:underline">{t.client.logFirst}</button>
                       </td>
                     </tr>
                   ) : measurements.map((m, idx) => {
@@ -463,7 +465,7 @@ export default function PatientProfilePage() {
                               style={{ fontFamily: "Inter, sans-serif" }}
                             >
                               {analysis && <span className="material-symbols-outlined" style={{ fontSize: "11px" }}>auto_awesome</span>}
-                              Detay
+                              {t.client.detay}
                             </button>
                             <button onClick={() => setOpenRowMenu(openRowMenu === idx ? null : idx)} className="text-outline hover:text-primary transition-colors">
                               <span className="material-symbols-outlined text-lg">more_horiz</span>
@@ -561,7 +563,7 @@ export default function PatientProfilePage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/20 text-white uppercase tracking-wide">
-                    {activeMeasurement.analysis ? `AI · ${activeMeasurement.analysis.data.device ?? "Body Analysis"}` : "Manuel Giriş"}
+                    {activeMeasurement.analysis ? `AI · ${activeMeasurement.analysis.data.device ?? "Body Analysis"}` : t.client.manualEntry}
                   </span>
                   <span className="text-white/50 text-xs">{activeMeasurement.measurement.date}</span>
                 </div>
@@ -596,8 +598,8 @@ export default function PatientProfilePage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center text-gray-400 bg-white dark:bg-gray-900">
                 <span className="material-symbols-outlined text-4xl mb-3 opacity-30">straighten</span>
-                <p className="text-sm font-medium text-gray-500">Bu ölçüm manuel girildi.</p>
-                <p className="text-xs mt-1 text-gray-400">AI analizi için rapor yükleyin.</p>
+                <p className="text-sm font-medium text-gray-500">{t.client.manualNote}</p>
+                <p className="text-xs mt-1 text-gray-400">{t.client.aiAnalysisReport}</p>
               </div>
             )}
           </div>

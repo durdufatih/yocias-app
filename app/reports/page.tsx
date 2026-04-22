@@ -8,6 +8,7 @@ import { useToast } from "../lib/useToast";
 import { useAuth } from "../lib/useAuth";
 import { getPatients, getAllMeasurementsWithPatient } from "../lib/db";
 import type { Patient, Measurement } from "../lib/data";
+import { useI18n } from "../lib/i18n";
 
 const PAGE_SIZE = 8;
 
@@ -28,6 +29,7 @@ function StatCard({ label, value, sub, icon, accent }: { label: string; value: s
 
 export default function ReportsPage() {
   const { loading: authLoading } = useAuth();
+  const { t } = useI18n();
   const { toasts, addToast, remove } = useToast();
 
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -69,10 +71,10 @@ export default function ReportsPage() {
   }, [patients, allMeasurements, thisMonth]);
 
   const statusDist = [
-    { label: "Aktif", count: stats.active, color: "bg-primary" },
-    { label: "Maintenance", count: stats.maintenance, color: "bg-secondary" },
-    { label: "Kritik", count: stats.critical, color: "bg-error" },
-    { label: "İnaktif", count: stats.inactive, color: "bg-outline-variant" },
+    { label: t.reports.active, count: stats.active, color: "bg-primary" },
+    { label: t.reports.maintenance, count: stats.maintenance, color: "bg-secondary" },
+    { label: t.reports.critical, count: stats.critical, color: "bg-error" },
+    { label: t.reports.inactive, count: stats.inactive, color: "bg-outline-variant" },
   ];
 
   const filtered = useMemo(() => {
@@ -90,16 +92,16 @@ export default function ReportsPage() {
     <div className="bg-surface min-h-screen">
       <Sidebar />
       <main className="ml-64 min-h-screen">
-        <TopBar title="Klinik Raporları" />
+        <TopBar title={t.reports.title} />
 
         <div className="p-10 max-w-6xl mx-auto space-y-8">
 
           {/* Stat Cards */}
           <div className="grid grid-cols-4 gap-5">
-            <StatCard label="Toplam Danışan" value={loading ? "…" : stats.total} icon="group" sub={`${stats.active} aktif`} />
-            <StatCard label="Toplam Ölçüm" value={loading ? "…" : stats.totalMeas} icon="straighten" sub={`${stats.measThisMonth} bu ay`} />
-            <StatCard label="Ort. BMI" value={loading ? "…" : stats.avgBmi} icon="monitor_weight" sub="tüm ölçümler" />
-            <StatCard label="Ort. Kilo" value={loading ? "…" : `${stats.avgWeight} kg`} icon="fitness_center" sub="tüm ölçümler" />
+            <StatCard label={t.reports.totalPatients} value={loading ? "…" : stats.total} icon="group" sub={`${stats.active} ${t.reports.activeCount}`} />
+            <StatCard label={t.reports.totalMeasurements} value={loading ? "…" : stats.totalMeas} icon="straighten" sub={`${stats.measThisMonth} ${t.reports.thisMonth}`} />
+            <StatCard label={t.reports.avgBmi} value={loading ? "…" : stats.avgBmi} icon="monitor_weight" sub={t.reports.allMeasurements} />
+            <StatCard label={t.reports.avgWeight} value={loading ? "…" : `${stats.avgWeight} kg`} icon="fitness_center" sub={t.reports.allMeasurements} />
           </div>
 
           {/* Status Distribution + Recent Measurements */}
@@ -107,7 +109,7 @@ export default function ReportsPage() {
 
             {/* Status breakdown */}
             <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20">
-              <h3 className="text-sm font-bold text-on-surface mb-5" style={{ fontFamily: "Manrope, sans-serif" }}>Danışan Durumları</h3>
+              <h3 className="text-sm font-bold text-on-surface mb-5" style={{ fontFamily: "Manrope, sans-serif" }}>{t.reports.statusDist}</h3>
               <div className="space-y-4">
                 {statusDist.map((s) => (
                   <div key={s.label}>
@@ -127,11 +129,11 @@ export default function ReportsPage() {
 
               <div className="mt-6 pt-5 border-t border-outline-variant/10 grid grid-cols-2 gap-3">
                 <div className="bg-surface-container rounded-xl p-3 text-center">
-                  <p className="text-[10px] text-outline uppercase tracking-wider mb-1">Kritik</p>
+                  <p className="text-[10px] text-outline uppercase tracking-wider mb-1">{t.reports.critical}</p>
                   <p className="text-xl font-extrabold text-error">{stats.critical}</p>
                 </div>
                 <div className="bg-surface-container rounded-xl p-3 text-center">
-                  <p className="text-[10px] text-outline uppercase tracking-wider mb-1">Aktif Oran</p>
+                  <p className="text-[10px] text-outline uppercase tracking-wider mb-1">{t.reports.activeRate}</p>
                   <p className="text-xl font-extrabold text-primary">
                     {stats.total ? `${Math.round((stats.active / stats.total) * 100)}%` : "—"}
                   </p>
@@ -142,11 +144,11 @@ export default function ReportsPage() {
             {/* Recent Measurements */}
             <div className="col-span-2 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 overflow-hidden">
               <div className="px-6 py-5 border-b border-outline-variant/10">
-                <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Son Ölçümler</h3>
+                <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{t.reports.recentMeasurements}</h3>
               </div>
               <div className="divide-y divide-outline-variant/10">
                 {loading ? (
-                  <p className="text-sm text-outline text-center py-10">Yükleniyor…</p>
+                  <p className="text-sm text-outline text-center py-10">{t.reports.loading}</p>
                 ) : allMeasurements.slice(0, 6).map((m, i) => (
                   <div key={i} className="flex items-center justify-between px-6 py-3.5 hover:bg-surface/50 transition-colors">
                     <div className="flex items-center gap-3">
@@ -160,11 +162,11 @@ export default function ReportsPage() {
                     </div>
                     <div className="flex items-center gap-6 text-right">
                       <div>
-                        <p className="text-[10px] text-outline">Kilo</p>
+                        <p className="text-[10px] text-outline">{t.reports.weight}</p>
                         <p className="text-sm font-bold">{m.weight ?? "—"} kg</p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-outline">Yağ</p>
+                        <p className="text-[10px] text-outline">{t.reports.fat}</p>
                         <p className="text-sm font-bold">{m.fat ?? "—"}%</p>
                       </div>
                       <div>
@@ -184,14 +186,14 @@ export default function ReportsPage() {
           {/* Patient Table */}
           <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 overflow-hidden">
             <div className="p-6 flex justify-between items-center border-b border-outline-variant/10">
-              <h3 className="text-lg font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>Danışan Listesi</h3>
+              <h3 className="text-lg font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{t.reports.patientList}</h3>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
                 <input
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                   className="bg-surface border-none rounded-lg pl-9 pr-4 py-2 text-xs w-56 focus:outline-none focus:ring-1 focus:ring-primary/20"
-                  placeholder="İsim veya protokol ara…"
+                  placeholder={t.reports.search}
                   type="text"
                 />
               </div>
@@ -200,18 +202,18 @@ export default function ReportsPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[10px] font-bold text-outline uppercase tracking-wider border-b border-outline-variant/10" style={{ fontFamily: "Inter, sans-serif" }}>
-                    <th className="px-6 py-4">Danışan</th>
-                    <th className="px-6 py-4">Protokol</th>
-                    <th className="px-6 py-4">Son Ziyaret</th>
-                    <th className="px-6 py-4">Durum</th>
-                    <th className="px-6 py-4">Trend</th>
+                    <th className="px-6 py-4">{t.dashboard.patient}</th>
+                    <th className="px-6 py-4">{t.reports.protocol}</th>
+                    <th className="px-6 py-4">{t.reports.lastVisit}</th>
+                    <th className="px-6 py-4">{t.reports.status}</th>
+                    <th className="px-6 py-4">{t.reports.trend}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
                   {loading ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-outline text-sm">Yükleniyor…</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-outline text-sm">{t.reports.loading}</td></tr>
                   ) : paginated.length === 0 ? (
-                    <tr><td colSpan={5} className="px-6 py-12 text-center text-outline text-sm">Danışan bulunamadı.</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-outline text-sm">{t.reports.noPatients}</td></tr>
                   ) : paginated.map((p) => {
                     const statusColor: Record<string, string> = {
                       Active: "text-primary bg-primary/10",
@@ -232,7 +234,7 @@ export default function ReportsPage() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold">{p.name}</p>
-                              {p.age && <p className="text-[10px] text-outline">{p.age} yaş</p>}
+                              {p.age && <p className="text-[10px] text-outline">{p.age} {t.reports.age}</p>}
                             </div>
                           </div>
                         </td>
@@ -256,7 +258,7 @@ export default function ReportsPage() {
             </div>
             <div className="px-6 py-4 flex justify-between items-center border-t border-outline-variant/10">
               <span className="text-[10px] font-bold text-outline">
-                {filtered.length} danışan — Sayfa {page} / {totalPages}
+                {filtered.length} {t.reports.patients} — {t.reports.page} {page} / {totalPages}
               </span>
               <div className="flex gap-2">
                 <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}

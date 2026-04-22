@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
-
-const navItems = [
-  { href: "/dashboard", icon: "group", label: "Clients", matchPaths: ["/dashboard", "/clients"] },
-  { href: "/ai-analysis", icon: "auto_awesome", label: "AI Analysis", matchPaths: ["/ai-analysis"] },
-  { href: "/reports", icon: "assessment", label: "Reports", matchPaths: ["/reports"] },
-];
+import { useI18n, type Lang } from "../lib/i18n";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t, lang, setLang } = useI18n();
+
+  const navItems = [
+    { href: "/dashboard", icon: "group", label: t.nav.clients, matchPaths: ["/dashboard", "/clients"] },
+    { href: "/ai-analysis", icon: "auto_awesome", label: t.nav.aiAnalysis, matchPaths: ["/ai-analysis"] },
+    { href: "/reports", icon: "assessment", label: t.nav.reports, matchPaths: ["/reports"] },
+  ];
 
   const isActive = (matchPaths: string[]) =>
     matchPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
@@ -67,27 +69,44 @@ export default function Sidebar() {
 
       {/* Bottom */}
       <div className="mt-auto flex flex-col gap-2">
+        {/* Language switcher */}
+        <div className="flex items-center gap-1 px-2 mb-1">
+          {(["tr", "en"] as Lang[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                lang === l
+                  ? "bg-primary text-white"
+                  : "text-outline hover:bg-surface-container-lowest"
+              }`}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
         <Link
           href="/clients/new"
           className="mb-2 bg-primary text-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-semibold text-sm active:scale-95 transition-transform"
           style={{ fontFamily: "Manrope, sans-serif" }}
         >
           <span className="material-symbols-outlined text-sm">add</span>
-          New Patient
+          {t.nav.newPatient}
         </Link>
         <a
           href="mailto:support@clinicalatelier.com"
           className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-outline hover:bg-surface-container-lowest/50 rounded-xl"
         >
           <span className="material-symbols-outlined">help</span>
-          <span>Support</span>
+          <span>{t.nav.support}</span>
         </a>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-outline hover:bg-surface-container-lowest/50 rounded-xl w-full text-left"
         >
           <span className="material-symbols-outlined">logout</span>
-          <span>Sign Out</span>
+          <span>{t.nav.signOut}</span>
         </button>
       </div>
     </aside>

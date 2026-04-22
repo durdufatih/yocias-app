@@ -11,6 +11,7 @@ import { useAuth } from "../lib/useAuth";
 import { getPatients, addMeasurement, saveBodyAnalysis } from "../lib/db";
 import type { BodyAnalysisData } from "../lib/db";
 import type { Patient } from "../lib/data";
+import { useI18n } from "../lib/i18n";
 
 type ExtractedData = BodyAnalysisData & { fat?: number };
 
@@ -40,6 +41,7 @@ function Section({ title, icon, children }: { title: string; icon: string; child
 
 function AIAnalysisContent() {
   useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const { toasts, addToast, remove } = useToast();
@@ -121,7 +123,7 @@ function AIAnalysisContent() {
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-outline mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">Clients</Link>
+            <Link href="/dashboard" className="hover:text-primary transition-colors">{t.nav.clients}</Link>
             <span className="material-symbols-outlined text-[12px]">chevron_right</span>
             {selectedPatient && (
               <>
@@ -129,25 +131,25 @@ function AIAnalysisContent() {
                 <span className="material-symbols-outlined text-[12px]">chevron_right</span>
               </>
             )}
-            <span className="text-primary font-semibold">AI Body Analysis</span>
+            <span className="text-primary font-semibold">{t.ai.title}</span>
           </div>
 
           {/* Header */}
           <div className="mb-8 flex justify-between items-end">
             <div>
-              <h2 className="text-3xl font-extrabold text-on-surface tracking-tight" style={{ fontFamily: "Manrope, sans-serif" }}>AI Body Analysis</h2>
-              <p className="text-outline mt-1 text-sm">Upload a body composition report to extract and save all measurements.</p>
+              <h2 className="text-3xl font-extrabold text-on-surface tracking-tight" style={{ fontFamily: "Manrope, sans-serif" }}>{t.ai.title}</h2>
+              <p className="text-outline mt-1 text-sm">{t.ai.uploadFirstSub}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => router.back()} className="px-5 py-2.5 border border-outline-variant text-outline font-bold text-sm rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
+              <button onClick={() => router.back()} className="px-5 py-2.5 border border-outline-variant text-outline font-bold text-sm rounded-full hover:bg-surface-container-low transition-colors">{t.common.cancel}</button>
               <button
                 onClick={handleSave}
                 disabled={!result || saving || saved || !selectedPatientId}
                 className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>Saving…</>
-                  : saved ? <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>Saved</>
-                  : <><span className="material-symbols-outlined text-sm">save</span>Save All Data</>}
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>{t.ai.saving}</>
+                  : saved ? <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>{t.ai.saved}</>
+                  : <><span className="material-symbols-outlined text-sm">save</span>{t.ai.save}</>}
               </button>
             </div>
           </div>
@@ -156,13 +158,13 @@ function AIAnalysisContent() {
           <div className="mb-8 flex items-center gap-4 p-5 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
             <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
             <div className="flex-1">
-              <p className="text-[10px] font-bold text-outline uppercase tracking-widest mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Patient</p>
+              <p className="text-[10px] font-bold text-outline uppercase tracking-widest mb-1" style={{ fontFamily: "Inter, sans-serif" }}>{t.ai.selectPatient}</p>
               <select
                 value={selectedPatientId}
                 onChange={(e) => { setSelectedPatientId(e.target.value); setResult(null); setSaved(false); }}
                 className="text-sm font-semibold text-on-surface bg-transparent border-none focus:outline-none cursor-pointer w-full"
               >
-                <option value="">— Select patient —</option>
+                <option value="">{t.ai.selectPatientPlaceholder}</option>
                 {patients.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
@@ -198,13 +200,13 @@ function AIAnalysisContent() {
                   </span>
                 </div>
                 {analysing ? (
-                  <><p className="text-sm font-bold text-primary">Analysing with AI…</p><p className="text-xs text-outline mt-1 truncate max-w-full px-2">{fileName}</p><p className="text-[10px] text-outline/60 mt-2">15–30 seconds</p></>
+                  <><p className="text-sm font-bold text-primary">{t.ai.analyzing}</p><p className="text-xs text-outline mt-1 truncate max-w-full px-2">{fileName}</p></>
                 ) : result ? (
-                  <><p className="text-sm font-bold text-primary truncate max-w-full px-2">{fileName}</p><p className="text-xs text-outline mt-1">Click to upload a different file</p></>
+                  <><p className="text-sm font-bold text-primary truncate max-w-full px-2">{fileName}</p><p className="text-xs text-outline mt-1">{t.ai.analyzeAnother}</p></>
                 ) : !selectedPatientId ? (
-                  <><p className="text-sm font-semibold text-outline">Select a patient first</p><p className="text-xs text-outline/60 mt-1">Choose a patient above to enable upload</p></>
+                  <><p className="text-sm font-semibold text-outline">{t.ai.uploadWarning}</p></>
                 ) : (
-                  <><p className="text-sm font-semibold text-on-surface">Upload Body Composition Report</p><p className="text-xs text-outline mt-1.5">Drag & drop or <span className="text-primary font-medium">browse files</span></p><p className="text-[10px] text-outline/60 mt-2">Tanita, InBody — PDF, JPG, PNG</p></>
+                  <><p className="text-sm font-semibold text-on-surface">{t.ai.uploadReport}</p><p className="text-xs text-outline mt-1.5">{t.ai.uploadHint}</p></>
                 )}
               </div>
 
@@ -238,8 +240,8 @@ function AIAnalysisContent() {
                 <div className="p-4 bg-secondary-container/30 border border-secondary/20 rounded-2xl flex items-center gap-3">
                   <span className="material-symbols-outlined text-secondary text-xl flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                   <div>
-                    <p className="text-sm font-semibold text-on-surface">Saved</p>
-                    <Link href={`/clients/${selectedPatientId}`} className="text-xs text-primary hover:underline">View {selectedPatient?.name}'s profile →</Link>
+                    <p className="text-sm font-semibold text-on-surface">{t.ai.saved}</p>
+                    <Link href={`/clients/${selectedPatientId}`} className="text-xs text-primary hover:underline">{t.ai.viewProfile}</Link>
                   </div>
                 </div>
               )}
@@ -252,21 +254,20 @@ function AIAnalysisContent() {
               {analysing && (
                 <div className="flex flex-col items-center justify-center py-24">
                   <span className="material-symbols-outlined text-5xl text-primary mb-4 animate-spin" style={{ animationDuration: "1.5s" }}>progress_activity</span>
-                  <p className="text-sm font-semibold text-on-surface">Reading the report…</p>
-                  <p className="text-xs text-outline mt-1">Extracting all body composition data</p>
+                  <p className="text-sm font-semibold text-on-surface">{t.ai.analyzing}</p>
                 </div>
               )}
 
               {!analysing && !result && (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <span className="material-symbols-outlined text-5xl text-outline mb-4">document_scanner</span>
-                  <p className="text-sm font-semibold text-outline">Upload a report to see all extracted data</p>
+                  <p className="text-sm font-semibold text-outline">{t.ai.uploadFirst}</p>
                 </div>
               )}
 
               {result && !analysing && (
                 <>
-                  <Section title="Body Composition" icon="monitor_weight">
+                  <Section title={t.ai.bodyComp} icon="monitor_weight">
                     <StatCard label="Weight" value={result.weight} unit="kg" />
                     <StatCard label="Height" value={result.height} unit="cm" />
                     <StatCard label="BMI" value={result.bmi} />
@@ -278,21 +279,21 @@ function AIAnalysisContent() {
                     <StatCard label="Body Density" value={result.body_density} />
                   </Section>
 
-                  <Section title="Fat Analysis" icon="local_fire_department">
+                  <Section title={t.ai.fatAnalysis} icon="local_fire_department">
                     <StatCard label="Fat Mass" value={result.fat_kg} unit="kg" />
                     <StatCard label="Fat %" value={result.fat_pct} unit="%" />
                     <StatCard label="Fat-Free Mass" value={result.fat_free_kg} unit="kg" />
                     <StatCard label="Visceral Fat Level" value={result.visceral_fat_level} />
                   </Section>
 
-                  <Section title="Sıvı Analizi" icon="water_drop">
+                  <Section title={t.ai.fluidAnalysis} icon="water_drop">
                     <StatCard label="Sıvı Ağırlığı" value={result.fluid_kg} unit="kg" />
                     <StatCard label="Sıvı Oranı" value={result.fluid_pct} unit="%" />
                     <StatCard label="Hücre İçi Sıvı" value={result.intracellular_fluid_kg} unit="kg" />
                     <StatCard label="Hücre Dışı Sıvı" value={result.extracellular_fluid_kg} unit="kg" />
                   </Section>
 
-                  <Section title="Kütlesel Analiz" icon="fitness_center">
+                  <Section title={t.ai.massAnalysis} icon="fitness_center">
                     <StatCard label="Yağımsız Kas Dokusu" value={result.lean_mass_kg} unit="kg" />
                     <StatCard label="İskeletsel Kaslar" value={result.skeletal_muscle_kg} unit="kg" />
                     <StatCard label="Kemik Mineralleri" value={result.bone_mass_kg} unit="kg" />
@@ -301,7 +302,7 @@ function AIAnalysisContent() {
                     <StatCard label="Protein %" value={result.protein_pct} unit="%" />
                   </Section>
 
-                  <Section title="Metabolizma" icon="electric_bolt">
+                  <Section title={t.ai.metabolism} icon="electric_bolt">
                     <StatCard label="BMR" value={result.bmr_kcal} unit="kcal" />
                     <StatCard label="BMR (kJ)" value={result.bmr_kj} unit="kJ" />
                     <StatCard label="BMR / kg" value={result.bmr_per_kg} />
