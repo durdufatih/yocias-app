@@ -309,8 +309,8 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-[13px] text-on-surface-variant max-w-xl">
                   {patients.filter((p) => p.status === "Critical").length > 0
-                    ? `${patients.filter((p) => p.status === "Critical").length} client(s) require immediate attention.`
-                    : "8.2% of your client base is showing markers of inflammatory response based on the last 14 days of data."}
+                    ? `${patients.filter((p) => p.status === "Critical").length} ${t.dashboard.criticalInsight}`
+                    : t.dashboard.inflammatoryInsight}
                 </p>
               </div>
             </div>

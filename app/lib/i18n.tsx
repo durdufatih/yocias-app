@@ -55,6 +55,8 @@ const tr = {
     cancel: "İptal",
     add: "Ekle",
     adding: "Ekleniyor…",
+    inflammatoryInsight: "Danışan tabanınızın %8,2'si son 14 günlük verilere göre inflamatuvar yanıt belirteçleri gösteriyor.",
+    criticalInsight: "danışan acil müdahale gerektiriyor.",
   },
   client: {
     title: "Danışan Profili",
@@ -219,6 +221,8 @@ const en: any = {
     cancel: "Cancel",
     add: "Add",
     adding: "Adding…",
+    inflammatoryInsight: "8.2% of your client base is showing markers of inflammatory response based on the last 14 days of data.",
+    criticalInsight: "client(s) require immediate attention.",
   },
   client: {
     title: "Client Profile",
@@ -383,6 +387,8 @@ const es: any = {
     cancel: "Cancelar",
     add: "Añadir",
     adding: "Añadiendo…",
+    inflammatoryInsight: "El 8,2% de sus pacientes muestra marcadores de respuesta inflamatoria en los últimos 14 días.",
+    criticalInsight: "paciente(s) requieren atención inmediata.",
   },
   client: {
     title: "Perfil del Paciente",
@@ -547,6 +553,8 @@ const fr: any = {
     cancel: "Annuler",
     add: "Ajouter",
     adding: "Ajout en cours…",
+    inflammatoryInsight: "8,2 % de vos patients présentent des marqueurs de réponse inflammatoire sur les 14 derniers jours.",
+    criticalInsight: "patient(s) nécessitent une attention immédiate.",
   },
   client: {
     title: "Profil du Patient",
