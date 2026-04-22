@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "../../components/Sidebar";
@@ -8,7 +8,82 @@ import TopBar from "../../components/TopBar";
 import Modal from "../../components/Modal";
 import Toasts from "../../components/Toast";
 import { useToast } from "../../lib/useToast";
-import { patients, measurementsByPatient } from "../../lib/data";
+import { useAuth } from "../../lib/useAuth";
+import { getPatient, getMeasurements, addMeasurement, deleteMeasurement, updatePatient, getBodyAnalyses } from "../../lib/db";
+import type { BodyAnalysis, BodyAnalysisData } from "../../lib/db";
+import type { Patient, Measurement } from "../../lib/data";
+
+/* ─── Measurement Detail Modal ──────────────────────────────────────── */
+function DetailRow({ label, value, unit }: { label: string; value: number | string | null | undefined; unit?: string }) {
+  if (value === null || value === undefined) return null;
+  return (
+    <div className="flex justify-between items-center py-2.5 border-b border-gray-100 dark:border-gray-800 last:border-0">
+      <span className="text-xs text-gray-500 dark:text-gray-400" style={{ fontFamily: "Inter, sans-serif" }}>{label}</span>
+      <span className="text-sm font-bold text-gray-900 dark:text-gray-100 tabular-nums">
+        {value} {unit && <span className="text-xs font-normal text-gray-400">{unit}</span>}
+      </span>
+    </div>
+  );
+}
+
+function SectionCard({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <span className="material-symbols-outlined text-indigo-600" style={{ fontVariationSettings: "'FILL' 1", fontSize: "18px" }}>{icon}</span>
+        <span className="text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider" style={{ fontFamily: "Inter, sans-serif" }}>{title}</span>
+      </div>
+      <div className="px-4 bg-white dark:bg-gray-900">{children}</div>
+    </div>
+  );
+}
+
+function BodyAnalysisDetail({ data }: { data: BodyAnalysisData }) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <SectionCard title="Vücut Kompozisyonu" icon="monitor_weight">
+        <DetailRow label="Boy" value={data.height} unit="cm" />
+        <DetailRow label="BMI" value={data.bmi} />
+        <DetailRow label="WHR — Bel Kalça Oranı" value={data.whr} />
+        <DetailRow label="Metabolizma Yaşı" value={data.metabolic_age} unit="yaş" />
+        <DetailRow label="İdeal Kilo" value={data.ideal_weight_kg} unit="kg" />
+        <DetailRow label="Obezite Derecesi" value={data.obesity_degree_pct} unit="%" />
+        <DetailRow label="Beden Yoğunluğu" value={data.body_density} />
+      </SectionCard>
+
+      <SectionCard title="Yağ Analizi" icon="local_fire_department">
+        <DetailRow label="Yağ Ağırlığı" value={data.fat_kg} unit="kg" />
+        <DetailRow label="Yağ Oranı" value={data.fat_pct} unit="%" />
+        <DetailRow label="Yağsız Kütle" value={data.fat_free_kg} unit="kg" />
+        <DetailRow label="İç Yağlanma Seviyesi" value={data.visceral_fat_level} />
+      </SectionCard>
+
+      <SectionCard title="Kütlesel Analiz" icon="fitness_center">
+        <DetailRow label="Yağımsız Kas Dokusu" value={data.lean_mass_kg} unit="kg" />
+        <DetailRow label="İskeletsel Kaslar" value={data.skeletal_muscle_kg} unit="kg" />
+        <DetailRow label="Kemik Mineralleri" value={data.bone_mass_kg} unit="kg" />
+        <DetailRow label="Hücre Kütlesi" value={data.cell_mass_kg} unit="kg" />
+        <DetailRow label="Protein Miktarı" value={data.protein_kg} unit="kg" />
+        <DetailRow label="Protein Oranı" value={data.protein_pct} unit="%" />
+      </SectionCard>
+
+      <div className="flex flex-col gap-4">
+        <SectionCard title="Sıvı Analizi" icon="water_drop">
+          <DetailRow label="Sıvı Ağırlığı" value={data.fluid_kg} unit="kg" />
+          <DetailRow label="Sıvı Oranı" value={data.fluid_pct} unit="%" />
+          <DetailRow label="Hücre İçi Sıvı" value={data.intracellular_fluid_kg} unit="kg" />
+          <DetailRow label="Hücre Dışı Sıvı" value={data.extracellular_fluid_kg} unit="kg" />
+        </SectionCard>
+
+        <SectionCard title="Metabolizma" icon="electric_bolt">
+          <DetailRow label="BMR" value={data.bmr_kcal} unit="kcal" />
+          <DetailRow label="BMR" value={data.bmr_kj} unit="kJ" />
+          <DetailRow label="BMR / kg" value={data.bmr_per_kg} />
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
 
 /* ─── SVG Line Chart ────────────────────────────────────────────────── */
 function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
@@ -25,45 +100,28 @@ function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
     );
   }
 
-  const W = 560;
-  const H = 160;
+  const W = 560, H = 160;
   const PAD = { top: 16, right: 24, bottom: 32, left: 44 };
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
-
   const weights = data.map((d) => d.weight);
   const minW = Math.min(...weights) - 1.5;
   const maxW = Math.max(...weights) + 1.5;
-
   const xOf = (i: number) => PAD.left + (data.length === 1 ? innerW / 2 : (i / (data.length - 1)) * innerW);
   const yOf = (w: number) => PAD.top + innerH - ((w - minW) / (maxW - minW)) * innerH;
-
-  // Build smooth polyline path
   const points = data.map((d, i) => `${xOf(i)},${yOf(d.weight)}`).join(" ");
-
-  // Area fill path
   const areaPath = [
     `M ${xOf(0)} ${yOf(data[0].weight)}`,
     ...data.map((d, i) => `L ${xOf(i)} ${yOf(d.weight)}`),
     `L ${xOf(data.length - 1)} ${H - PAD.bottom}`,
-    `L ${xOf(0)} ${H - PAD.bottom}`,
-    "Z",
+    `L ${xOf(0)} ${H - PAD.bottom}`, "Z",
   ].join(" ");
-
-  // Y-axis grid lines
   const yTicks = 4;
-  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) =>
-    minW + ((maxW - minW) / yTicks) * i
-  );
+  const yTickValues = Array.from({ length: yTicks + 1 }, (_, i) => minW + ((maxW - minW) / yTicks) * i);
 
   return (
     <div className="relative w-full">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full"
-        style={{ height: "192px" }}
-        onMouseLeave={() => setHovered(null)}
-      >
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: "192px" }} onMouseLeave={() => setHovered(null)}>
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#37602c" stopOpacity="0.15" />
@@ -74,84 +132,27 @@ function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
             <stop offset="100%" stopColor="#37602c" />
           </linearGradient>
         </defs>
-
-        {/* Grid lines */}
         {yTickValues.map((val, i) => (
           <g key={i}>
-            <line
-              x1={PAD.left} y1={yOf(val)}
-              x2={W - PAD.right} y2={yOf(val)}
-              stroke="#c2c9bb" strokeWidth="0.5" strokeDasharray="4,4"
-            />
-            <text
-              x={PAD.left - 6} y={yOf(val) + 4}
-              textAnchor="end" fontSize="9" fill="#73796d"
-              fontFamily="Inter, sans-serif"
-            >
-              {val.toFixed(1)}
-            </text>
+            <line x1={PAD.left} y1={yOf(val)} x2={W - PAD.right} y2={yOf(val)} stroke="#c2c9bb" strokeWidth="0.5" strokeDasharray="4,4" />
+            <text x={PAD.left - 6} y={yOf(val) + 4} textAnchor="end" fontSize="9" fill="#73796d" fontFamily="Inter, sans-serif">{val.toFixed(1)}</text>
           </g>
         ))}
-
-        {/* X-axis labels */}
-        {data.map((d, i) => {
-          const label = d.date.split(",")[0].slice(0, 6); // "Mar 12"
-          return (
-            <text
-              key={i}
-              x={xOf(i)} y={H - 6}
-              textAnchor="middle" fontSize="9" fill={i === data.length - 1 ? "#37602c" : "#73796d"}
-              fontWeight={i === data.length - 1 ? "700" : "400"}
-              fontFamily="Inter, sans-serif"
-            >
-              {label}
-            </text>
-          );
-        })}
-
-        {/* Area fill */}
+        {data.map((d, i) => (
+          <text key={i} x={xOf(i)} y={H - 6} textAnchor="middle" fontSize="9" fill={i === data.length - 1 ? "#37602c" : "#73796d"} fontWeight={i === data.length - 1 ? "700" : "400"} fontFamily="Inter, sans-serif">
+            {d.date.split(",")[0].slice(0, 6)}
+          </text>
+        ))}
         <path d={areaPath} fill="url(#areaGrad)" />
-
-        {/* Line */}
-        <polyline
-          points={points}
-          fill="none"
-          stroke="url(#lineGrad)"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-
-        {/* Data points */}
+        <polyline points={points} fill="none" stroke="url(#lineGrad)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {data.map((d, i) => (
           <g key={i} onMouseEnter={() => setHovered(i)} style={{ cursor: "pointer" }}>
-            {/* Larger invisible hit area */}
             <circle cx={xOf(i)} cy={yOf(d.weight)} r="12" fill="transparent" />
-            {/* Visible dot */}
-            <circle
-              cx={xOf(i)} cy={yOf(d.weight)}
-              r={hovered === i ? 5 : i === data.length - 1 ? 4 : 3}
-              fill={i === data.length - 1 ? "#37602c" : "#ffffff"}
-              stroke="#37602c"
-              strokeWidth={i === data.length - 1 ? 0 : 2}
-              style={{ transition: "r 0.15s" }}
-            />
-            {/* Tooltip */}
+            <circle cx={xOf(i)} cy={yOf(d.weight)} r={hovered === i ? 5 : i === data.length - 1 ? 4 : 3} fill={i === data.length - 1 ? "#37602c" : "#ffffff"} stroke="#37602c" strokeWidth={i === data.length - 1 ? 0 : 2} style={{ transition: "r 0.15s" }} />
             {hovered === i && (
               <g>
-                <rect
-                  x={xOf(i) - 28}
-                  y={yOf(d.weight) - 32}
-                  width="56" height="22" rx="6"
-                  fill="#37602c"
-                />
-                <text
-                  x={xOf(i)} y={yOf(d.weight) - 16}
-                  textAnchor="middle" fontSize="10" fill="white"
-                  fontWeight="700" fontFamily="Manrope, sans-serif"
-                >
-                  {d.weight} kg
-                </text>
+                <rect x={xOf(i) - 28} y={yOf(d.weight) - 32} width="56" height="22" rx="6" fill="#37602c" />
+                <text x={xOf(i)} y={yOf(d.weight) - 16} textAnchor="middle" fontSize="10" fill="white" fontWeight="700" fontFamily="Manrope, sans-serif">{d.weight} kg</text>
               </g>
             )}
           </g>
@@ -165,28 +166,48 @@ function WeightChart({ data }: { data: { date: string; weight: number }[] }) {
 export default function PatientProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const { loading: authLoading } = useAuth();
   const { toasts, addToast, remove } = useToast();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const patientId = params.id as string;
-  const patient = patients.find((p) => p.id === patientId);
+
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [bodyAnalyses, setBodyAnalyses] = useState<BodyAnalysis[]>([]);
+  const [activeMeasurement, setActiveMeasurement] = useState<{ measurement: Measurement; analysis: BodyAnalysis | null } | null>(null);
+  const [loadingData, setLoadingData] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   const [tab, setTab] = useState<"6M" | "1Y">("6M");
-  const [measurements, setMeasurements] = useState(measurementsByPatient[patientId] ?? []);
   const [showLogData, setShowLogData] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [openRowMenu, setOpenRowMenu] = useState<number | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [logForm, setLogForm] = useState({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
-  const [editForm, setEditForm] = useState({
-    restingHR: patient?.restingHR.toString() ?? "",
-    bp: patient?.bp ?? "",
-    protocol: patient?.protocol ?? "",
-  });
+  const [editForm, setEditForm] = useState({ restingHR: "", bp: "", protocol: "" });
 
-  if (!patient) {
+  useEffect(() => {
+    if (authLoading) return;
+    Promise.all([getPatient(patientId), getMeasurements(patientId), getBodyAnalyses(patientId)]).then(([p, m, ba]) => {
+      if (!p) { setNotFound(true); setLoadingData(false); return; }
+      setPatient(p);
+      setMeasurements(m);
+      setBodyAnalyses(ba);
+      setEditForm({ restingHR: p.restingHR?.toString() ?? "", bp: p.bp ?? "", protocol: p.protocol ?? "" });
+      setLoadingData(false);
+    });
+  }, [authLoading, patientId]);
+
+  if (authLoading || loadingData) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>
+      </div>
+    );
+  }
+
+  if (notFound || !patient) {
     return (
       <div className="bg-background min-h-screen">
         <Sidebar />
@@ -201,49 +222,69 @@ export default function PatientProfilePage() {
     );
   }
 
-  // Derive chart data from real measurements, filtered by tab
-  const sortedMeasurements = [...measurements].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedAsc = [...measurements].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const chartPoints = tab === "6M"
-    ? sortedMeasurements.slice(-6).map((m) => ({ date: m.date, weight: m.weight }))
-    : sortedMeasurements.map((m) => ({ date: m.date, weight: m.weight }));
-
-  const handleLogData = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newEntry = {
-      date: new Date(logForm.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-      weight: parseFloat(logForm.weight),
-      fat: parseFloat(logForm.fat),
-      muscle: parseFloat(logForm.muscle),
-      bmi: parseFloat(logForm.bmi),
-    };
-    setMeasurements([newEntry, ...measurements]);
-    addToast("Measurement logged successfully.");
-    setShowLogData(false);
-    setLogForm({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
-  };
-
-  const handleEditSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    addToast("Patient data updated.");
-    setShowEdit(false);
-  };
-
-  const handleDeleteRow = (idx: number) => {
-    setMeasurements((prev) => prev.filter((_, i) => i !== idx));
-    setOpenRowMenu(null);
-    addToast("Measurement deleted.", "info");
-  };
-
-  const handleFile = (file: File) => {
-    setUploadedFile(file.name);
-    addToast(`"${file.name}" uploaded — AI analysis ready.`);
-  };
+    ? sortedAsc.slice(-6).map((m) => ({ date: m.date, weight: m.weight }))
+    : sortedAsc.map((m) => ({ date: m.date, weight: m.weight }));
 
   const latestWeight = measurements[0]?.weight;
   const prevWeight = measurements[1]?.weight;
   const weightDelta = latestWeight && prevWeight ? (latestWeight - prevWeight).toFixed(1) : null;
+
+  const handleLogData = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const entry = await addMeasurement(patientId, {
+        date: logForm.date,
+        weight: parseFloat(logForm.weight),
+        fat: parseFloat(logForm.fat),
+        muscle: parseFloat(logForm.muscle),
+        bmi: parseFloat(logForm.bmi),
+      });
+      setMeasurements((prev) => [entry, ...prev]);
+      addToast("Measurement logged successfully.");
+      setShowLogData(false);
+      setLogForm({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
+    } catch {
+      addToast("Failed to log measurement.", "info");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updatePatient(patientId, {
+        resting_hr: editForm.restingHR ? parseInt(editForm.restingHR) : undefined,
+        bp: editForm.bp || undefined,
+        protocol: editForm.protocol || undefined,
+      });
+      setPatient((prev) => prev ? { ...prev, restingHR: parseInt(editForm.restingHR), bp: editForm.bp, protocol: editForm.protocol } : prev);
+      addToast("Patient data updated.");
+      setShowEdit(false);
+    } catch {
+      addToast("Failed to update patient.", "info");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteRow = async (idx: number) => {
+    const m = measurements[idx];
+    if (!m.id) return;
+    try {
+      await deleteMeasurement(m.id);
+      setMeasurements((prev) => prev.filter((_, i) => i !== idx));
+      setOpenRowMenu(null);
+      addToast("Measurement deleted.", "info");
+    } catch {
+      addToast("Failed to delete measurement.", "info");
+    }
+  };
+
 
   return (
     <div className="bg-background min-h-screen">
@@ -267,11 +308,11 @@ export default function PatientProfilePage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-on-background" style={{ fontFamily: "Manrope, sans-serif" }}>{patient.name}</h1>
-                <p className="text-sm text-outline mt-0.5">ID: #{patient.id.toUpperCase()} • Joined {patient.joinDate}</p>
+                <p className="text-sm text-outline mt-0.5">ID: #{patient.id.slice(0, 8).toUpperCase()} • Joined {patient.joinDate ?? "—"}</p>
                 <div className="flex gap-4 mt-3 flex-wrap">
-                  <span className="text-xs font-semibold text-primary py-1 px-3 bg-primary/5 rounded-full">{editForm.protocol}</span>
+                  <span className="text-xs font-semibold text-primary py-1 px-3 bg-primary/5 rounded-full">{editForm.protocol || patient.protocol || "No protocol"}</span>
                   <span className="text-xs text-outline uppercase tracking-wider mt-1" style={{ fontFamily: "Inter, sans-serif" }}>
-                    {patient.age} YRS • {patient.height} CM • {patient.bloodType}
+                    {patient.age ? `${patient.age} YRS` : ""}{patient.height ? ` • ${patient.height} CM` : ""}{patient.bloodType ? ` • ${patient.bloodType}` : ""}
                   </span>
                 </div>
               </div>
@@ -279,11 +320,13 @@ export default function PatientProfilePage() {
             <div className="flex gap-8 px-8 border-l border-outline-variant/10">
               <div className="text-center">
                 <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>Resting HR</p>
-                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.restingHR} <span className="text-xs font-normal text-outline">BPM</span></p>
+                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
+                  {editForm.restingHR || patient.restingHR || "—"} <span className="text-xs font-normal text-outline">BPM</span>
+                </p>
               </div>
               <div className="text-center">
                 <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>BP</p>
-                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.bp}</p>
+                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.bp || patient.bp || "—"}</p>
               </div>
               {latestWeight && (
                 <div className="text-center">
@@ -301,7 +344,6 @@ export default function PatientProfilePage() {
 
           {/* Chart + AI Insight */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Weight Chart */}
             <div className="lg:col-span-3 bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10">
               <div className="flex justify-between items-center mb-6">
                 <div>
@@ -328,13 +370,7 @@ export default function PatientProfilePage() {
                   </div>
                   <div className="flex bg-surface-container-low p-1 rounded-lg">
                     {(["6M", "1Y"] as const).map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${tab === t ? "bg-surface-container-lowest text-on-surface shadow-sm" : "text-outline hover:text-on-surface"}`}
-                      >
-                        {t}
-                      </button>
+                      <button key={t} onClick={() => setTab(t)} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${tab === t ? "bg-surface-container-lowest text-on-surface shadow-sm" : "text-outline hover:text-on-surface"}`}>{t}</button>
                     ))}
                   </div>
                 </div>
@@ -350,12 +386,11 @@ export default function PatientProfilePage() {
               </div>
               <p className="text-sm text-on-surface leading-relaxed flex-1">
                 {patient.status === "Critical"
-                  ? <><span className="font-bold text-error">Immediate attention required.</span> Elevated inflammatory markers detected. Recommend protocol adjustment.</>
+                  ? <><span className="font-bold text-error">Immediate attention required.</span> Elevated inflammatory markers detected.</>
                   : measurements.length >= 2
-                  ? <><span className="font-bold">Progress on track.</span> Consistent improvements in metabolic markers over the last {measurements.length} sessions.</>
+                  ? <><span className="font-bold">Progress on track.</span> Consistent improvements over the last {measurements.length} sessions.</>
                   : <><span className="font-bold">Baseline established.</span> Log more measurements to unlock AI trend analysis.</>}
               </p>
-
               {measurements.length >= 2 && (
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {[
@@ -369,7 +404,6 @@ export default function PatientProfilePage() {
                   ))}
                 </div>
               )}
-
               <div className="mt-4 pt-4 border-t border-secondary/10">
                 <p className="text-[10px] text-secondary uppercase font-bold mb-2" style={{ fontFamily: "Inter, sans-serif" }}>Next Step</p>
                 <div className="flex items-center gap-2">
@@ -377,10 +411,7 @@ export default function PatientProfilePage() {
                   <span className="text-xs font-medium">Dexa Scan — Week 12</span>
                 </div>
               </div>
-              <button
-                onClick={() => router.push("/ai-analysis")}
-                className="mt-4 w-full py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg hover:bg-secondary/20 transition-colors"
-              >
+              <button onClick={() => router.push("/ai-analysis")} className="mt-4 w-full py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg hover:bg-secondary/20 transition-colors">
                 Run AI Analysis →
               </button>
             </div>
@@ -391,15 +422,10 @@ export default function PatientProfilePage() {
             <div className="p-6 flex justify-between items-center border-b border-outline-variant/10">
               <div>
                 <h2 className="text-lg font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>Measurement History</h2>
-                <p className="text-xs text-outline mt-0.5">{measurements.length} records — chart updates automatically</p>
+                <p className="text-xs text-outline mt-0.5">{measurements.length} records</p>
               </div>
-              <button
-                onClick={() => setShowLogData(true)}
-                className="bg-primary text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-transform active:scale-95"
-                style={{ fontFamily: "Manrope, sans-serif" }}
-              >
-                <span className="material-symbols-outlined text-sm">add</span>
-                Log Data
+              <button onClick={() => setShowLogData(true)} className="bg-primary text-white px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 transition-transform active:scale-95" style={{ fontFamily: "Manrope, sans-serif" }}>
+                <span className="material-symbols-outlined text-sm">add</span> Log Data
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -417,67 +443,48 @@ export default function PatientProfilePage() {
                       <td colSpan={6} className="px-6 py-12 text-center">
                         <span className="material-symbols-outlined text-outline text-4xl mb-3 block">table_chart</span>
                         <p className="text-sm text-outline mb-3">No measurements logged yet.</p>
-                        <button onClick={() => setShowLogData(true)} className="text-xs font-bold text-primary hover:underline">
-                          Log the first measurement →
-                        </button>
+                        <button onClick={() => setShowLogData(true)} className="text-xs font-bold text-primary hover:underline">Log the first measurement →</button>
                       </td>
                     </tr>
-                  ) : measurements.map((m, idx) => (
-                    <tr key={idx} className="hover:bg-primary/5 transition-colors border-b border-outline-variant/5 last:border-0">
-                      <td className={`px-6 py-4 font-bold ${idx > 0 ? "text-on-surface/70" : ""}`}>{m.date}</td>
-                      <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.weight}</td>
-                      <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.fat}</td>
-                      <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.muscle}</td>
-                      <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.bmi}</td>
-                      <td className="px-6 py-4 text-right relative">
-                        <button onClick={() => setOpenRowMenu(openRowMenu === idx ? null : idx)} className="text-outline hover:text-primary transition-colors">
-                          <span className="material-symbols-outlined text-lg">more_horiz</span>
-                        </button>
-                        {openRowMenu === idx && (
-                          <div className="absolute right-6 top-full mt-1 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-lg py-1.5 z-50 min-w-[140px]">
-                            <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low" onClick={() => { addToast("Edit mode coming soon.", "info"); setOpenRowMenu(null); }}>
-                              <span className="material-symbols-outlined text-outline" style={{ fontSize: "16px" }}>edit</span> Edit
+                  ) : measurements.map((m, idx) => {
+                    const analysis = bodyAnalyses.find((ba) => ba.measurement_id === m.id) ?? null;
+                    return (
+                      <tr key={m.id ?? idx} className="hover:bg-primary/5 transition-colors border-b border-outline-variant/5 last:border-0">
+                        <td className={`px-6 py-4 font-bold ${idx > 0 ? "text-on-surface/70" : ""}`}>{m.date}</td>
+                        <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.weight}</td>
+                        <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.fat}</td>
+                        <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.muscle}</td>
+                        <td className={`px-6 py-4 ${idx > 0 ? "text-outline" : "font-semibold text-on-surface"}`}>{m.bmi}</td>
+                        <td className="px-6 py-4 text-right relative">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setActiveMeasurement({ measurement: m, analysis })}
+                              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold transition-colors bg-surface-container-high text-outline hover:bg-primary/10 hover:text-primary"
+                              style={{ fontFamily: "Inter, sans-serif" }}
+                            >
+                              {analysis && <span className="material-symbols-outlined" style={{ fontSize: "11px" }}>auto_awesome</span>}
+                              Detay
                             </button>
-                            <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-error hover:bg-error/5" onClick={() => handleDeleteRow(idx)}>
-                              <span className="material-symbols-outlined text-error" style={{ fontSize: "16px" }}>delete</span> Delete
+                            <button onClick={() => setOpenRowMenu(openRowMenu === idx ? null : idx)} className="text-outline hover:text-primary transition-colors">
+                              <span className="material-symbols-outlined text-lg">more_horiz</span>
                             </button>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                          {openRowMenu === idx && (
+                            <div className="absolute right-6 top-full mt-1 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-lg py-1.5 z-50 min-w-[140px]">
+                              <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-error hover:bg-error/5" onClick={() => handleDeleteRow(idx)}>
+                                <span className="material-symbols-outlined text-error" style={{ fontSize: "16px" }}>delete</span> Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Upload Area */}
-          <div
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={(e) => { e.preventDefault(); setIsDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-            className={`rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all border-2 border-dashed ${isDragging ? "bg-secondary-container/30 border-secondary/50" : uploadedFile ? "bg-primary/5 border-primary/30" : "bg-surface-container-low border-outline-variant/30 hover:border-primary/40"}`}
-            onClick={() => fileRef.current?.click()}
-          >
-            <input ref={fileRef} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            {uploadedFile ? (
-              <>
-                <span className="material-symbols-outlined text-primary text-3xl mb-3" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
-                <p className="text-sm font-semibold text-primary">{uploadedFile}</p>
-                <p className="text-xs text-outline mt-1 mb-4">File ready for AI analysis</p>
-                <button onClick={(e) => { e.stopPropagation(); router.push("/ai-analysis"); }} className="text-xs font-bold text-white px-6 py-2 bg-primary rounded-full shadow-sm hover:bg-primary-container transition-all">
-                  Analyse with AI →
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-outline text-3xl mb-3">upload_file</span>
-                <p className="text-sm font-semibold text-on-surface">Upload lab results or body scans</p>
-                <p className="text-xs text-outline mt-1 mb-4">Drag & drop or click to browse — PDF or JPEG (Max 50MB)</p>
-                <span className="text-xs font-bold text-primary px-6 py-2 bg-surface-container-lowest rounded-full border border-primary/10 shadow-sm">Select Files</span>
-              </>
-            )}
-          </div>
         </div>
       </main>
 
@@ -504,7 +511,9 @@ export default function PatientProfilePage() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setShowLogData(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
-              <button type="submit" className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors">Save Measurement</button>
+              <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors disabled:opacity-60 flex items-center gap-2">
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> Saving...</> : "Save Measurement"}
+              </button>
             </div>
           </form>
         </Modal>
@@ -532,10 +541,67 @@ export default function PatientProfilePage() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setShowEdit(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
-              <button type="submit" className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors">Save Changes</button>
+              <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors disabled:opacity-60 flex items-center gap-2">
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> Saving...</> : "Save Changes"}
+              </button>
             </div>
           </form>
         </Modal>
+      )}
+
+      {/* Measurement Detail Modal */}
+      {activeMeasurement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setActiveMeasurement(null)} />
+          <div className="relative w-full max-w-3xl max-h-[88vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl z-10 bg-white dark:bg-gray-900">
+
+            {/* Header */}
+            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 px-6 pt-5 pb-6">
+              {/* Top row: badge + close */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/20 text-white uppercase tracking-wide">
+                    {activeMeasurement.analysis ? `AI · ${activeMeasurement.analysis.data.device ?? "Body Analysis"}` : "Manuel Giriş"}
+                  </span>
+                  <span className="text-white/50 text-xs">{activeMeasurement.measurement.date}</span>
+                </div>
+                <button onClick={() => setActiveMeasurement(null)} className="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors">
+                  <span className="material-symbols-outlined text-xl">close</span>
+                </button>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-4 divide-x divide-white/20">
+                {[
+                  { label: "Kilo", value: activeMeasurement.measurement.weight, unit: "kg" },
+                  { label: "Yağ Oranı", value: activeMeasurement.measurement.fat, unit: "%" },
+                  { label: "Kas Kütlesi", value: activeMeasurement.measurement.muscle, unit: "kg" },
+                  { label: "BMI", value: activeMeasurement.measurement.bmi, unit: "" },
+                ].map((s) => (
+                  <div key={s.label} className="px-4 first:pl-0 last:pr-0">
+                    <p className="text-[10px] font-semibold text-white/50 uppercase tracking-widest mb-1">{s.label}</p>
+                    <p className="text-2xl font-extrabold text-white leading-none">
+                      {s.value ?? "—"}<span className="text-sm font-normal text-white/60 ml-1">{s.unit}</span>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Body analysis sections */}
+            {activeMeasurement.analysis ? (
+              <div className="overflow-y-auto p-5 bg-gray-50 dark:bg-gray-900">
+                <BodyAnalysisDetail data={activeMeasurement.analysis.data} />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-gray-400 bg-white dark:bg-gray-900">
+                <span className="material-symbols-outlined text-4xl mb-3 opacity-30">straighten</span>
+                <p className="text-sm font-medium text-gray-500">Bu ölçüm manuel girildi.</p>
+                <p className="text-xs mt-1 text-gray-400">AI analizi için rapor yükleyin.</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {openRowMenu !== null && <div className="fixed inset-0 z-40" onClick={() => setOpenRowMenu(null)} />}

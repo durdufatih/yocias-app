@@ -7,6 +7,8 @@ import Sidebar from "../../components/Sidebar";
 import TopBar from "../../components/TopBar";
 import Toasts from "../../components/Toast";
 import { useToast } from "../../lib/useToast";
+import { useAuth } from "../../lib/useAuth";
+import { createPatient } from "../../lib/db";
 
 const PROTOCOLS = [
   "Anti-Inflammatory Protocol", "Weight Management", "Diabetic Management",
@@ -16,12 +18,12 @@ const BLOOD_TYPES = ["A RH+", "A RH-", "B RH+", "B RH-", "AB RH+", "AB RH-", "O 
 
 export default function NewPatientPage() {
   const router = useRouter();
+  const { loading: authLoading } = useAuth();
   const { toasts, addToast, remove } = useToast();
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", email: "", phone: "",
-    age: "", height: "", weight: "", bloodType: "",
-    protocol: "", notes: "",
+    age: "", height: "", bloodType: "", protocol: "", notes: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -30,11 +32,35 @@ export default function NewPatientPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    addToast(`${form.firstName} ${form.lastName} added to the directory.`);
-    await new Promise((r) => setTimeout(r, 800));
-    router.push("/dashboard");
+    try {
+      await createPatient({
+        first_name: form.firstName,
+        last_name: form.lastName,
+        email: form.email || undefined,
+        phone: form.phone || undefined,
+        age: form.age ? parseInt(form.age) : undefined,
+        height: form.height ? parseFloat(form.height) : undefined,
+        blood_type: form.bloodType || undefined,
+        protocol: form.protocol || undefined,
+        notes: form.notes || undefined,
+      });
+      addToast(`${form.firstName} ${form.lastName} added to the directory.`);
+      setTimeout(() => router.push("/dashboard"), 800);
+    } catch {
+      addToast("Failed to add patient. Please try again.", "info");
+      setSubmitting(false);
+    }
   };
+
+  if (authLoading) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin" style={{ animationDuration: "1s" }}>
+          progress_activity
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background min-h-screen">
@@ -82,7 +108,7 @@ export default function NewPatientPage() {
             {/* Clinical Info */}
             <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 p-6 space-y-5">
               <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Clinical Data</h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Age *</label>
                   <input type="number" required value={form.age} onChange={e => update("age", e.target.value)} placeholder="34" min="1" max="120" className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
@@ -90,10 +116,6 @@ export default function NewPatientPage() {
                 <div>
                   <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Height (cm)</label>
                   <input type="number" value={form.height} onChange={e => update("height", e.target.value)} placeholder="172" className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Weight (kg)</label>
-                  <input type="number" step="0.1" value={form.weight} onChange={e => update("weight", e.target.value)} placeholder="70.0" className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
               </div>
               <div>
@@ -166,7 +188,6 @@ export default function NewPatientPage() {
           </form>
         </div>
       </main>
-
       <Toasts toasts={toasts} remove={remove} />
     </div>
   );

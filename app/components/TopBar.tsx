@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Modal from "./Modal";
+import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 
 interface TopBarProps {
   title?: string;
@@ -12,12 +13,27 @@ interface TopBarProps {
 export default function TopBar({ title, search, onSearch }: TopBarProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+  }, []);
+
+  const displayName = user?.user_metadata?.first_name
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name ?? ""}`.trim()
+    : user?.email?.split("@")[0] ?? "Dr. Thorne";
+
+  const initials = displayName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const notifications = [
-    { icon: "warning", color: "text-error", text: "Sasha Vane — Critical status requires attention.", time: "2m ago" },
-    { icon: "auto_awesome", color: "text-secondary", text: "AI analysis complete for Eleanor Thorne.", time: "18m ago" },
-    { icon: "calendar_today", color: "text-primary", text: "Upcoming: Julian Thorne check-in tomorrow.", time: "1h ago" },
-    { icon: "trending_up", color: "text-primary", text: "Margot Sterling reached 3-month goal.", time: "3h ago" },
+    { icon: "warning", color: "text-error", text: "Check patients with Critical status.", time: "2m ago" },
+    { icon: "auto_awesome", color: "text-secondary", text: "AI analysis ready to run on new uploads.", time: "18m ago" },
+    { icon: "trending_up", color: "text-primary", text: "New measurement data available for review.", time: "1h ago" },
   ];
 
   return (
@@ -69,11 +85,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
                       </div>
                     </div>
                   ))}
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="w-full py-3 text-xs text-primary font-bold hover:bg-surface-container-low transition-colors"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
+                  <button onClick={() => setShowNotifications(false)} className="w-full py-3 text-xs text-primary font-bold hover:bg-surface-container-low transition-colors" style={{ fontFamily: "Inter, sans-serif" }}>
                     MARK ALL AS READ
                   </button>
                 </div>
@@ -97,11 +109,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
                     { icon: "notifications", label: "Notification Prefs" },
                     { icon: "help", label: "Help & Support" },
                   ].map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => setShowSettings(false)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
-                    >
+                    <button key={item.label} onClick={() => setShowSettings(false)} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface hover:bg-surface-container-low transition-colors">
                       <span className="material-symbols-outlined text-outline text-base" style={{ fontSize: "18px" }}>{item.icon}</span>
                       {item.label}
                     </button>
@@ -113,17 +121,16 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
 
           <div className="flex items-center gap-3 pl-4 border-l border-outline-variant/20">
             <div className="text-right">
-              <p className="text-sm font-semibold text-on-surface leading-none" style={{ fontFamily: "Manrope, sans-serif" }}>Dr. Elena Thorne</p>
+              <p className="text-sm font-semibold text-on-surface leading-none" style={{ fontFamily: "Manrope, sans-serif" }}>{displayName}</p>
               <p className="text-[10px] text-outline uppercase tracking-wider mt-0.5" style={{ fontFamily: "Inter, sans-serif" }}>Clinical Director</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm cursor-pointer hover:bg-primary/30 transition-colors">
-              ET
+              {initials}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Click outside to close */}
       {(showNotifications || showSettings) && (
         <div className="fixed inset-0 z-30" onClick={() => { setShowNotifications(false); setShowSettings(false); }} />
       )}

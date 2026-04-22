@@ -1,60 +1,98 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import Modal from "../components/Modal";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
-import { patients, measurementsByPatient } from "../lib/data";
+import { useAuth } from "../lib/useAuth";
+import { getPatients, getAllMeasurementsWithPatient, getMeasurements, addMeasurement } from "../lib/db";
+import type { Patient, Measurement } from "../lib/data";
+
+type MeasurementWithPatient = Measurement & { patient: Patient };
 
 export default function MeasurementsPage() {
+  const { loading: authLoading } = useAuth();
   const { toasts, addToast, remove } = useToast();
+
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [allRows, setAllRows] = useState<MeasurementWithPatient[]>([]);
+  const [patientMeasurements, setPatientMeasurements] = useState<Measurement[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   const [search, setSearch] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
+  const [saving, setSaving] = useState(false);
 
-  const [localMeasurements, setLocalMeasurements] = useState(measurementsByPatient);
+  useEffect(() => {
+    if (authLoading) return;
+    Promise.all([getPatients(), getAllMeasurementsWithPatient()])
+      .then(([pts, rows]) => { setPatients(pts); setAllRows(rows); })
+      .finally(() => setLoadingData(false));
+  }, [authLoading]);
 
-  const filteredPatients = useMemo(() =>
-    patients.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())),
-    [search]
+  useEffect(() => {
+    if (!selectedPatient) { setPatientMeasurements([]); return; }
+    getMeasurements(selectedPatient).then(setPatientMeasurements);
+  }, [selectedPatient]);
+
+  const filteredPatients = useMemo(
+    () => patients.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())),
+    [patients, search]
   );
 
   const currentPatient = patients.find((p) => p.id === selectedPatient);
-  const currentMeasurements = selectedPatient ? (localMeasurements[selectedPatient] ?? []) : [];
 
-  const handleAdd = (e: React.FormEvent) => {
+  const measurementCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allRows.forEach((r) => { counts[r.patient.id] = (counts[r.patient.id] ?? 0) + 1; });
+    return counts;
+  }, [allRows]);
+
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPatient) return;
-    const entry = {
-      date: form.date,
-      weight: parseFloat(form.weight),
-      fat: parseFloat(form.fat),
-      muscle: parseFloat(form.muscle),
-      bmi: parseFloat(form.bmi),
-    };
-    setLocalMeasurements((prev) => ({
-      ...prev,
-      [selectedPatient]: [entry, ...(prev[selectedPatient] ?? [])],
-    }));
-    addToast("Measurement logged successfully.");
-    setShowAdd(false);
-    setForm({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
+    setSaving(true);
+    try {
+      const entry = await addMeasurement(selectedPatient, {
+        date: form.date,
+        weight: parseFloat(form.weight),
+        fat: parseFloat(form.fat),
+        muscle: parseFloat(form.muscle),
+        bmi: parseFloat(form.bmi),
+      });
+      setPatientMeasurements((prev) => [entry, ...prev]);
+      // Update allRows
+      const patient = patients.find((p) => p.id === selectedPatient)!;
+      setAllRows((prev) => [{ ...entry, patient }, ...prev]);
+      addToast("Measurement logged successfully.");
+      setShowAdd(false);
+      setForm({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
+    } catch {
+      addToast("Failed to log measurement.", "info");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const allMeasurements = useMemo(() => {
-    const rows: { patient: typeof patients[0]; date: string; weight: number; fat: number; muscle: number; bmi: number }[] = [];
-    patients.forEach((p) => {
-      (localMeasurements[p.id] ?? []).forEach((m) => {
-        rows.push({ patient: p, ...m });
-      });
-    });
-    return rows.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [localMeasurements]);
+  const displayRows = selectedPatient
+    ? patientMeasurements.map((m) => ({ ...m, patient: currentPatient! }))
+    : allRows;
+
+  const avgBmi = allRows.length ? (allRows.reduce((a, b) => a + b.bmi, 0) / allRows.length).toFixed(1) : "—";
+  const avgFat = allRows.length ? (allRows.reduce((a, b) => a + b.fat, 0) / allRows.length).toFixed(1) + "%" : "—";
+
+  if (authLoading || loadingData) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background min-h-screen">
@@ -82,10 +120,10 @@ export default function MeasurementsPage() {
 
           <div className="grid grid-cols-4 gap-8 mb-12">
             {[
-              { label: "Total Records", value: allMeasurements.length.toString() },
-              { label: "Patients Tracked", value: Object.keys(localMeasurements).filter(k => localMeasurements[k].length > 0).length.toString() },
-              { label: "Avg BMI", value: (allMeasurements.reduce((a, b) => a + b.bmi, 0) / (allMeasurements.length || 1)).toFixed(1) },
-              { label: "Avg Fat %", value: (allMeasurements.reduce((a, b) => a + b.fat, 0) / (allMeasurements.length || 1)).toFixed(1) + "%" },
+              { label: "Total Records", value: allRows.length.toString() },
+              { label: "Patients Tracked", value: Object.keys(measurementCounts).length.toString() },
+              { label: "Avg BMI", value: avgBmi },
+              { label: "Avg Fat %", value: avgFat },
             ].map((s) => (
               <div key={s.label} className="p-2">
                 <p className="text-outline text-[11px] uppercase tracking-widest mb-1 font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>{s.label}</p>
@@ -106,7 +144,7 @@ export default function MeasurementsPage() {
                   All Patients
                 </button>
                 {filteredPatients.map((p) => {
-                  const count = localMeasurements[p.id]?.length ?? 0;
+                  const count = measurementCounts[p.id] ?? 0;
                   return (
                     <button
                       key={p.id}
@@ -131,19 +169,22 @@ export default function MeasurementsPage() {
                     {currentPatient ? currentPatient.name : "All Records"}
                   </p>
                   <p className="text-xs text-outline" style={{ fontFamily: "Inter, sans-serif" }}>
-                    {selectedPatient ? currentMeasurements.length : allMeasurements.length} records
+                    {displayRows.length} records
                   </p>
                 </div>
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-surface-container-low/30 border-b border-outline-variant/10">
-                      {(!selectedPatient ? ["Patient", "Date", "Weight (kg)", "Fat %", "Muscle (kg)", "BMI"] : ["Date", "Weight (kg)", "Fat %", "Muscle (kg)", "BMI", ""]).map((col, i) => (
+                      {(!selectedPatient
+                        ? ["Patient", "Date", "Weight (kg)", "Fat %", "Muscle (kg)", "BMI"]
+                        : ["Date", "Weight (kg)", "Fat %", "Muscle (kg)", "BMI", ""]
+                      ).map((col, i) => (
                         <th key={i} className="px-5 py-4 text-[10px] text-outline uppercase tracking-wider" style={{ fontFamily: "Inter, sans-serif" }}>{col}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="text-sm divide-y divide-outline-variant/5">
-                    {(selectedPatient ? currentMeasurements.map((m) => ({ patient: currentPatient!, ...m })) : allMeasurements).length === 0 ? (
+                    {displayRows.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-6 py-16 text-center text-outline">
                           <span className="material-symbols-outlined text-4xl mb-3 block">straighten</span>
@@ -155,8 +196,8 @@ export default function MeasurementsPage() {
                           )}
                         </td>
                       </tr>
-                    ) : (selectedPatient ? currentMeasurements.map((m) => ({ patient: currentPatient!, ...m })) : allMeasurements).map((row, idx) => (
-                      <tr key={idx} className="hover:bg-primary/5 transition-colors">
+                    ) : displayRows.map((row, idx) => (
+                      <tr key={row.id ?? idx} className="hover:bg-primary/5 transition-colors">
                         {!selectedPatient && (
                           <td className="px-5 py-4">
                             <Link href={`/clients/${row.patient.id}`} className="flex items-center gap-2 hover:text-primary transition-colors group">
@@ -187,7 +228,6 @@ export default function MeasurementsPage() {
         </section>
       </main>
 
-      {/* Add Measurement Modal */}
       {showAdd && (
         <Modal title={`Log Measurement — ${currentPatient?.name}`} onClose={() => setShowAdd(false)}>
           <form onSubmit={handleAdd} className="space-y-4">
@@ -210,7 +250,9 @@ export default function MeasurementsPage() {
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={() => setShowAdd(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
-              <button type="submit" className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors">Save Measurement</button>
+              <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors disabled:opacity-60 flex items-center gap-2">
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> Saving...</> : "Save Measurement"}
+              </button>
             </div>
           </form>
         </Modal>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/app/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,16 +18,16 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 600));
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const isDemo =
-      (email === "demo" || email === "demo@demo.com") && password === "demo";
-
-    if (isDemo) {
-      router.push("/dashboard");
-    } else {
-      setError("Invalid credentials. Try demo / demo for the demo account.");
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
+    } else {
+      router.push("/dashboard");
     }
   };
 
@@ -134,39 +135,16 @@ export default function LoginPage() {
             Sign in to your clinical workspace.
           </p>
 
-          {/* Demo hint */}
-          <div className="bg-secondary/8 border border-secondary/20 rounded-xl p-4 mb-6 flex items-start gap-3">
-            <span
-              className="material-symbols-outlined text-secondary flex-shrink-0"
-              style={{ fontVariationSettings: "'FILL' 1", fontSize: "20px" }}
-            >
-              info
-            </span>
-            <div>
-              <p
-                className="text-xs font-bold text-secondary mb-0.5"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Demo Account
-              </p>
-              <p className="text-xs text-on-surface-variant">
-                Use <span className="font-bold text-on-surface">demo</span> /{" "}
-                <span className="font-bold text-on-surface">demo</span> to
-                explore the platform.
-              </p>
-            </div>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
                 className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                Email or Username
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="dr.thorne@clinic.com"
