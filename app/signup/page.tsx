@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import posthog from "posthog-js";
 import { supabase } from "@/app/lib/supabase";
 import { useI18n } from "@/app/lib/i18n";
 
@@ -18,6 +19,8 @@ export default function SignupPage() {
     a.roleOther,
   ];
 
+  useEffect(() => { posthog.capture("signup_started"); }, []);
+
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,6 +32,7 @@ export default function SignupPage() {
 
   const handleStep1 = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    posthog.capture("signup_step1_completed");
     setStep(2);
   };
 
@@ -41,8 +45,14 @@ export default function SignupPage() {
       password: form.password,
       options: { data: { first_name: form.firstName, last_name: form.lastName, role: form.role, clinic: form.clinic } },
     });
-    if (authError) { setError(authError.message); setLoading(false); }
-    else { setEmailSent(true); }
+    if (authError) {
+      posthog.capture("signup_error", { error: authError.message });
+      setError(authError.message);
+      setLoading(false);
+    } else {
+      posthog.capture("signup_step2_completed", { role: form.role });
+      setEmailSent(true);
+    }
   };
 
   return (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { supabase } from "@/app/lib/supabase";
 import { useI18n } from "@/app/lib/i18n";
 
@@ -23,9 +24,11 @@ export default function LoginPage() {
     setLoading(true);
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) {
+      posthog.capture("login_error", { error: authError.message });
       setError(authError.message);
       setLoading(false);
     } else {
+      posthog.capture("login_success");
       router.push("/dashboard");
     }
   };

@@ -1428,16 +1428,11 @@ const I18nContext = createContext<I18nContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+  const [lang, setLangState] = useState<Lang>("tr");
 
   useEffect(() => {
     const saved = localStorage.getItem("lang") as Lang | null;
-    if (saved && saved in translations) {
-      setLangState(saved);
-    } else {
-      const browser = navigator.language.split("-")[0] as Lang;
-      setLangState(browser in translations ? browser : "en");
-    }
+    if (saved && saved in translations) setLangState(saved);
   }, []);
 
   const setLang = (l: Lang) => {

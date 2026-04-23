@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import posthog from "posthog-js";
 import { supabase } from "../lib/supabase";
 import { useI18n, type Lang } from "../lib/i18n";
 
@@ -27,12 +28,24 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
   const [user, setUser] = useState<User | null>(null);
 
   const handleLogout = async () => {
+    posthog.capture("logout");
+    posthog.reset();
     await supabase.auth.signOut();
     router.push("/login");
   };
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        posthog.identify(user.id, {
+          email: user.email,
+          name: user.user_metadata?.first_name
+            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name ?? ""}`.trim()
+            : user.email,
+        });
+      }
+    });
   }, []);
 
   const displayName = user?.user_metadata?.first_name
@@ -86,7 +99,7 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
                 {langOptions.map((l) => (
                   <button
                     key={l.code}
-                    onClick={() => { setLang(l.code); setShowLang(false); }}
+                    onClick={() => { posthog.capture("language_changed", { from: lang, to: l.code }); setLang(l.code); setShowLang(false); }}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                       lang === l.code
                         ? "bg-primary/10 text-primary font-semibold"

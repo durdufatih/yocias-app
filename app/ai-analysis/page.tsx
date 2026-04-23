@@ -12,6 +12,7 @@ import { getPatients, addMeasurement, saveBodyAnalysis } from "../lib/db";
 import type { BodyAnalysisData } from "../lib/db";
 import type { Patient } from "../lib/data";
 import { useI18n } from "../lib/i18n";
+import posthog from "posthog-js";
 
 type ExtractedData = BodyAnalysisData & { fat?: number };
 
@@ -67,6 +68,7 @@ function AIAnalysisContent() {
     setSaved(false);
     setError(null);
     setAnalysing(true);
+    posthog.capture("ai_analysis_started", { patient_id: selectedPatientId, file_name: file.name });
     const form = new FormData();
     form.append("file", file);
     try {
@@ -75,9 +77,11 @@ function AIAnalysisContent() {
       if (!res.ok) throw new Error(data.error || "Analysis failed");
       setResult(data as ExtractedData);
       const count = Object.values(data).filter((v) => v !== null && v !== undefined).length;
+      posthog.capture("ai_analysis_completed", { patient_id: selectedPatientId, data_points: count });
       addToast(`Analysis complete — ${count} data points extracted.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Analysis failed";
+      posthog.capture("ai_analysis_error", { patient_id: selectedPatientId, error: msg });
       setError(msg);
       addToast(msg, "info");
     } finally {
@@ -106,6 +110,7 @@ function AIAnalysisContent() {
       });
       await saveBodyAnalysis(selectedPatientId, measurement.id ?? null, date, result);
       setSaved(true);
+      posthog.capture("ai_analysis_saved", { patient_id: selectedPatientId });
       addToast(`All data saved to ${selectedPatient?.name ?? "patient"}'s record.`);
     } catch {
       addToast("Failed to save. Please try again.", "info");

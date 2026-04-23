@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import posthog from "posthog-js";
+import { useEffect } from "react";
 import { useI18n } from "./lib/i18n";
 
 export default function LandingPage() {
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
+
+  useEffect(() => {
+    if (localStorage.getItem("lang")) return;
+    const browser = navigator.language.split("-")[0];
+    if (["tr", "en", "es", "fr"].includes(browser)) setLang(browser as import("./lib/i18n").Lang);
+    else setLang("en");
+  }, []);
   const l = t.landing;
 
   const features = [
@@ -62,7 +71,7 @@ export default function LandingPage() {
         </h1>
         <p className="text-lg text-outline leading-relaxed mb-10 max-w-xl mx-auto">{l.heroDesc}</p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
-          <Link href="/signup" className="px-8 py-3.5 bg-primary text-white font-bold rounded-full hover:bg-primary-container transition-all active:scale-95 shadow-sm text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
+          <Link href="/signup" onClick={() => posthog.capture("hero_cta_clicked")} className="px-8 py-3.5 bg-primary text-white font-bold rounded-full hover:bg-primary-container transition-all active:scale-95 shadow-sm text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
             {l.startFree}
           </Link>
           <Link href="/login" className="px-8 py-3.5 border border-outline-variant text-on-surface font-semibold rounded-full hover:bg-surface-container-low transition-all text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
@@ -179,7 +188,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup" className={`w-full py-3 rounded-full text-sm font-bold text-center transition-all active:scale-95 ${plan.highlight ? "bg-white text-primary hover:bg-primary-fixed" : "bg-primary text-white hover:bg-primary-container"}`} style={{ fontFamily: "Manrope, sans-serif" }}>
+                <Link href="/signup" onClick={() => posthog.capture("pricing_plan_clicked", { plan: plan.name })} className={`w-full py-3 rounded-full text-sm font-bold text-center transition-all active:scale-95 ${plan.highlight ? "bg-white text-primary hover:bg-primary-fixed" : "bg-primary text-white hover:bg-primary-container"}`} style={{ fontFamily: "Manrope, sans-serif" }}>
                   {plan.cta}
                 </Link>
               </div>

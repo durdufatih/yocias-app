@@ -13,6 +13,7 @@ import { getPatient, getMeasurements, addMeasurement, deleteMeasurement, updateP
 import type { BodyAnalysis, BodyAnalysisData } from "../../lib/db";
 import type { Patient, Measurement } from "../../lib/data";
 import { useI18n } from "../../lib/i18n";
+import posthog from "posthog-js";
 
 /* ─── Measurement Detail Modal ──────────────────────────────────────── */
 function DetailRow({ label, value, unit }: { label: string; value: number | string | null | undefined; unit?: string }) {
@@ -194,6 +195,7 @@ export default function PatientProfilePage() {
     if (authLoading) return;
     Promise.all([getPatient(patientId), getMeasurements(patientId), getBodyAnalyses(patientId)]).then(([p, m, ba]) => {
       if (!p) { setNotFound(true); setLoadingData(false); return; }
+      posthog.capture("patient_viewed", { patient_id: patientId });
       setPatient(p);
       setMeasurements(m);
       setBodyAnalyses(ba);
@@ -246,6 +248,7 @@ export default function PatientProfilePage() {
         bmi: parseFloat(logForm.bmi),
       });
       setMeasurements((prev) => [entry, ...prev]);
+      posthog.capture("measurement_logged", { patient_id: patientId });
       addToast("Measurement logged successfully.");
       setShowLogData(false);
       setLogForm({ date: "", weight: "", fat: "", muscle: "", bmi: "" });
@@ -282,6 +285,7 @@ export default function PatientProfilePage() {
       await deleteMeasurement(m.id);
       setMeasurements((prev) => prev.filter((_, i) => i !== idx));
       setOpenRowMenu(null);
+      posthog.capture("measurement_deleted", { patient_id: patientId });
       addToast("Measurement deleted.", "info");
     } catch {
       addToast("Failed to delete measurement.", "info");

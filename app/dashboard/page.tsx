@@ -12,6 +12,7 @@ import { useAuth } from "../lib/useAuth";
 import { getPatients, createPatient } from "../lib/db";
 import { statusStyles, trendBarColor, trendTextColor, type Status, type Patient } from "../lib/data";
 import { useI18n } from "../lib/i18n";
+import posthog from "posthog-js";
 
 const PAGE_SIZE = 5;
 const ALL_STATUSES: Status[] = ["Active", "Maintenance", "Critical", "Inactive"];
@@ -71,6 +72,7 @@ export default function DashboardPage() {
         age: newPatient.age ? parseInt(newPatient.age) : undefined,
         protocol: newPatient.protocol || undefined,
       });
+      posthog.capture("patient_add_completed", { protocol: newPatient.protocol });
       addToast(`${newPatient.firstName} ${newPatient.lastName} added to directory.`);
       setShowNewPatient(false);
       setNewPatient({ firstName: "", lastName: "", email: "", age: "", protocol: "" });
@@ -137,7 +139,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <button
-                onClick={() => setShowNewPatient(true)}
+                onClick={() => { posthog.capture("patient_add_started"); setShowNewPatient(true); }}
                 className="px-5 py-2 text-sm bg-primary text-white font-semibold rounded-lg flex items-center gap-2 active:scale-95 transition-all"
               >
                 <span className="material-symbols-outlined text-sm">person_add</span>
@@ -386,7 +388,7 @@ export default function DashboardPage() {
 
       {/* FAB */}
       <button
-        onClick={() => setShowNewPatient(true)}
+        onClick={() => { posthog.capture("patient_add_started"); setShowNewPatient(true); }}
         className="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-2xl shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50"
       >
         <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>

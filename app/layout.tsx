@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { LanguageProvider } from "./lib/i18n";
+import { PHProvider } from "./lib/posthog";
+import PageView from "./components/PageView";
 
 export const metadata: Metadata = {
   title: "Yocias",
@@ -25,7 +27,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
-        <LanguageProvider>{children}</LanguageProvider>
+        <PHProvider>
+          <LanguageProvider>
+            <PageView />
+            {children}
+          </LanguageProvider>
+        </PHProvider>
       </body>
     </html>
   );
