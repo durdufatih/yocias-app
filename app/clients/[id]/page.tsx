@@ -40,46 +40,47 @@ function SectionCard({ title, icon, children }: { title: string; icon: string; c
 }
 
 function BodyAnalysisDetail({ data }: { data: BodyAnalysisData }) {
+  const { t } = useI18n();
   return (
     <div className="grid grid-cols-2 gap-4">
-      <SectionCard title="Vücut Kompozisyonu" icon="monitor_weight">
-        <DetailRow label="Boy" value={data.height} unit="cm" />
+      <SectionCard title={t.client.bodyCompSection} icon="monitor_weight">
+        <DetailRow label={t.client.height} value={data.height} unit="cm" />
         <DetailRow label="BMI" value={data.bmi} />
-        <DetailRow label="WHR — Bel Kalça Oranı" value={data.whr} />
-        <DetailRow label="Metabolizma Yaşı" value={data.metabolic_age} unit="yaş" />
-        <DetailRow label="İdeal Kilo" value={data.ideal_weight_kg} unit="kg" />
-        <DetailRow label="Obezite Derecesi" value={data.obesity_degree_pct} unit="%" />
-        <DetailRow label="Beden Yoğunluğu" value={data.body_density} />
+        <DetailRow label={t.client.whr} value={data.whr} />
+        <DetailRow label={t.client.metabolicAge} value={data.metabolic_age} unit={t.client.ageUnit} />
+        <DetailRow label={t.client.idealWeight} value={data.ideal_weight_kg} unit="kg" />
+        <DetailRow label={t.client.obesityDegree} value={data.obesity_degree_pct} unit="%" />
+        <DetailRow label={t.client.bodyDensity} value={data.body_density} />
       </SectionCard>
 
-      <SectionCard title="Yağ Analizi" icon="local_fire_department">
-        <DetailRow label="Yağ Ağırlığı" value={data.fat_kg} unit="kg" />
-        <DetailRow label="Yağ Oranı" value={data.fat_pct} unit="%" />
-        <DetailRow label="Yağsız Kütle" value={data.fat_free_kg} unit="kg" />
-        <DetailRow label="İç Yağlanma Seviyesi" value={data.visceral_fat_level} />
+      <SectionCard title={t.client.fatSection} icon="local_fire_department">
+        <DetailRow label={t.client.fatMass} value={data.fat_kg} unit="kg" />
+        <DetailRow label={t.client.fatPct} value={data.fat_pct} unit="%" />
+        <DetailRow label={t.client.fatFreeMass} value={data.fat_free_kg} unit="kg" />
+        <DetailRow label={t.client.visceralFat} value={data.visceral_fat_level} />
       </SectionCard>
 
-      <SectionCard title="Kütlesel Analiz" icon="fitness_center">
-        <DetailRow label="Yağımsız Kas Dokusu" value={data.lean_mass_kg} unit="kg" />
-        <DetailRow label="İskeletsel Kaslar" value={data.skeletal_muscle_kg} unit="kg" />
-        <DetailRow label="Kemik Mineralleri" value={data.bone_mass_kg} unit="kg" />
-        <DetailRow label="Hücre Kütlesi" value={data.cell_mass_kg} unit="kg" />
-        <DetailRow label="Protein Miktarı" value={data.protein_kg} unit="kg" />
-        <DetailRow label="Protein Oranı" value={data.protein_pct} unit="%" />
+      <SectionCard title={t.client.massSection} icon="fitness_center">
+        <DetailRow label={t.client.leanMass} value={data.lean_mass_kg} unit="kg" />
+        <DetailRow label={t.client.skeletalMuscle} value={data.skeletal_muscle_kg} unit="kg" />
+        <DetailRow label={t.client.boneMass} value={data.bone_mass_kg} unit="kg" />
+        <DetailRow label={t.client.cellMass} value={data.cell_mass_kg} unit="kg" />
+        <DetailRow label={t.client.proteinMass} value={data.protein_kg} unit="kg" />
+        <DetailRow label={t.client.proteinPct} value={data.protein_pct} unit="%" />
       </SectionCard>
 
       <div className="flex flex-col gap-4">
-        <SectionCard title="Sıvı Analizi" icon="water_drop">
-          <DetailRow label="Sıvı Ağırlığı" value={data.fluid_kg} unit="kg" />
-          <DetailRow label="Sıvı Oranı" value={data.fluid_pct} unit="%" />
-          <DetailRow label="Hücre İçi Sıvı" value={data.intracellular_fluid_kg} unit="kg" />
-          <DetailRow label="Hücre Dışı Sıvı" value={data.extracellular_fluid_kg} unit="kg" />
+        <SectionCard title={t.client.fluidSection} icon="water_drop">
+          <DetailRow label={t.client.fluidMass} value={data.fluid_kg} unit="kg" />
+          <DetailRow label={t.client.fluidPct} value={data.fluid_pct} unit="%" />
+          <DetailRow label={t.client.intracellularFluid} value={data.intracellular_fluid_kg} unit="kg" />
+          <DetailRow label={t.client.extracellularFluid} value={data.extracellular_fluid_kg} unit="kg" />
         </SectionCard>
 
-        <SectionCard title="Metabolizma" icon="electric_bolt">
-          <DetailRow label="BMR" value={data.bmr_kcal} unit="kcal" />
-          <DetailRow label="BMR" value={data.bmr_kj} unit="kJ" />
-          <DetailRow label="BMR / kg" value={data.bmr_per_kg} />
+        <SectionCard title={t.client.metaSection} icon="electric_bolt">
+          <DetailRow label={t.client.bmrKcal} value={data.bmr_kcal} unit="kcal" />
+          <DetailRow label={t.client.bmrKj} value={data.bmr_kj} unit="kJ" />
+          <DetailRow label={t.client.bmrPerKg} value={data.bmr_per_kg} />
         </SectionCard>
       </div>
     </div>
@@ -297,7 +298,7 @@ export default function PatientProfilePage() {
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-outline" style={{ fontFamily: "Inter, sans-serif" }}>
-            <Link href="/dashboard" className="hover:text-primary transition-colors">Clients</Link>
+            <Link href="/dashboard" className="hover:text-primary transition-colors">{t.nav.clients}</Link>
             <span className="material-symbols-outlined text-[12px]">chevron_right</span>
             <span className="text-on-surface font-medium">{patient.name}</span>
           </div>
@@ -321,18 +322,18 @@ export default function PatientProfilePage() {
             </div>
             <div className="flex gap-8 px-8 border-l border-outline-variant/10">
               <div className="text-center">
-                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>Resting HR</p>
+                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.restingHR}</p>
                 <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
                   {editForm.restingHR || patient.restingHR || "—"} <span className="text-xs font-normal text-outline">BPM</span>
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>BP</p>
+                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.bp}</p>
                 <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.bp || patient.bp || "—"}</p>
               </div>
               {latestWeight && (
                 <div className="text-center">
-                  <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>Weight</p>
+                  <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.weightLabel}</p>
                   <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
                     {latestWeight} <span className="text-xs font-normal text-outline">kg</span>
                   </p>
@@ -353,7 +354,7 @@ export default function PatientProfilePage() {
                   <div className="flex items-center gap-3 mt-0.5">
                     {latestWeight ? (
                       <>
-                        <p className="text-xs text-outline">Current: <span className="font-semibold text-on-surface">{latestWeight} kg</span></p>
+                        <p className="text-xs text-outline">{t.client.current}: <span className="font-semibold text-on-surface">{latestWeight} kg</span></p>
                         {weightDelta && (
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${parseFloat(weightDelta) < 0 ? "text-primary bg-primary/10" : "text-error bg-error/10"}`} style={{ fontFamily: "Inter, sans-serif" }}>
                             {parseFloat(weightDelta) < 0 ? "▼" : "▲"} {Math.abs(parseFloat(weightDelta))} kg
@@ -368,7 +369,7 @@ export default function PatientProfilePage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1.5 text-xs text-outline">
                     <div className="w-3 h-0.5 bg-primary rounded-full" />
-                    <span style={{ fontFamily: "Inter, sans-serif" }}>Weight (kg)</span>
+                    <span style={{ fontFamily: "Inter, sans-serif" }}>{t.client.chartLegend}</span>
                   </div>
                   <div className="flex bg-surface-container-low p-1 rounded-lg">
                     {(["6M", "1Y"] as const).map((t) => (
@@ -381,42 +382,62 @@ export default function PatientProfilePage() {
             </div>
 
             {/* AI Insight */}
-            <div className="bg-secondary-container/20 rounded-xl p-6 border border-secondary/10 flex flex-col">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Clinical Insight</h3>
-              </div>
-              <p className="text-sm text-on-surface leading-relaxed flex-1">
-                {patient.status === "Critical"
-                  ? <><span className="font-bold text-error">{t.client.immediateAttention}</span> {t.client.elevatedMarkers}</>
-                  : measurements.length >= 2
-                  ? <><span className="font-bold">{t.client.progressOnTrack}</span> {t.client.consistentProgress}</>
-                  : <><span className="font-bold">{t.client.baselineEstablished}</span> {t.client.logMoreMeasurements}</>}
-              </p>
-              {measurements.length >= 2 && (
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Fat Change", value: `${(measurements[0].fat - measurements[measurements.length - 1].fat).toFixed(1)}%`, positive: measurements[0].fat < measurements[measurements.length - 1].fat },
-                    { label: "Muscle", value: `${measurements[0].muscle} kg`, positive: true },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-surface-container-lowest/60 rounded-lg p-3">
-                      <p className="text-[10px] text-outline uppercase tracking-wider mb-1" style={{ fontFamily: "Inter, sans-serif" }}>{stat.label}</p>
-                      <p className={`text-sm font-bold ${stat.positive ? "text-primary" : "text-error"}`} style={{ fontFamily: "Manrope, sans-serif" }}>{stat.value}</p>
+            {(() => {
+              const lastDate = measurements[0] ? new Date(measurements[0].date) : null;
+              const daysSinceLast = lastDate ? Math.floor((Date.now() - lastDate.getTime()) / 86400000) : null;
+              const nextStepIcon = patient.status === "Critical" ? "warning" : measurements.length === 0 ? "add_circle" : daysSinceLast !== null && daysSinceLast > 30 ? "event" : "check_circle";
+              const nextStepText = patient.status === "Critical"
+                ? t.client.nextStepUrgent
+                : measurements.length === 0
+                ? t.client.nextStepLogFirst
+                : daysSinceLast !== null && daysSinceLast > 30
+                ? `${t.client.nextStepSchedule} (${daysSinceLast} ${t.client.daysSince})`
+                : t.client.nextStepReview;
+              return (
+                <div className="bg-secondary-container/20 rounded-xl p-6 border border-secondary/10 flex flex-col">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-secondary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                    <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{t.client.clinicalInsight}</h3>
+                  </div>
+                  <p className="text-sm text-on-surface leading-relaxed flex-1">
+                    {patient.status === "Critical"
+                      ? <><span className="font-bold text-error">{t.client.immediateAttention}</span> {t.client.elevatedMarkers}</>
+                      : measurements.length >= 2
+                      ? <><span className="font-bold">{t.client.progressOnTrack}</span> {t.client.consistentProgress}</>
+                      : <><span className="font-bold">{t.client.baselineEstablished}</span> {t.client.logMoreMeasurements}</>}
+                  </p>
+                  {measurements.length >= 2 && (
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      {(() => {
+                        const weightDiff = measurements[0].weight - measurements[measurements.length - 1].weight;
+                        const bmiDiff = measurements[0].bmi && measurements[measurements.length - 1].bmi
+                          ? measurements[0].bmi - measurements[measurements.length - 1].bmi
+                          : null;
+                        return [
+                          { label: t.client.weightStat, value: `${weightDiff > 0 ? "▲" : "▼"} ${Math.abs(weightDiff).toFixed(1)} kg`, positive: weightDiff <= 0 },
+                          { label: "BMI", value: bmiDiff !== null ? `${bmiDiff > 0 ? "▲" : "▼"} ${Math.abs(bmiDiff).toFixed(1)}` : "—", positive: bmiDiff !== null ? bmiDiff <= 0 : true },
+                        ];
+                      })().map((stat) => (
+                        <div key={stat.label} className="bg-surface-container-lowest/60 rounded-lg p-3">
+                          <p className="text-[10px] text-outline uppercase tracking-wider mb-1" style={{ fontFamily: "Inter, sans-serif" }}>{stat.label}</p>
+                          <p className={`text-sm font-bold ${stat.positive ? "text-primary" : "text-error"}`} style={{ fontFamily: "Manrope, sans-serif" }}>{stat.value}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                  <div className="mt-4 pt-4 border-t border-secondary/10">
+                    <p className="text-[10px] text-secondary uppercase font-bold mb-2" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.nextStep}</p>
+                    <div className="flex items-center gap-2">
+                      <span className={`material-symbols-outlined text-base ${patient.status === "Critical" ? "text-error" : "text-primary"}`}>{nextStepIcon}</span>
+                      <span className="text-xs font-medium">{nextStepText}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => router.push("/ai-analysis")} className="mt-4 w-full py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg hover:bg-secondary/20 transition-colors">
+                    {t.client.runAiAnalysis}
+                  </button>
                 </div>
-              )}
-              <div className="mt-4 pt-4 border-t border-secondary/10">
-                <p className="text-[10px] text-secondary uppercase font-bold mb-2" style={{ fontFamily: "Inter, sans-serif" }}>Next Step</p>
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">calendar_today</span>
-                  <span className="text-xs font-medium">Dexa Scan — Week 12</span>
-                </div>
-              </div>
-              <button onClick={() => router.push("/ai-analysis")} className="mt-4 w-full py-2 bg-secondary/10 text-secondary text-xs font-bold rounded-lg hover:bg-secondary/20 transition-colors">
-                {t.client.runAiAnalysis}
-              </button>
-            </div>
+              );
+            })()}
           </div>
 
           {/* Measurement History */}
@@ -434,7 +455,7 @@ export default function PatientProfilePage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-surface-container-low/30 border-b border-outline-variant/10">
-                    {["Date", "Weight (kg)", "Fat %", "Muscle (kg)", "BMI", ""].map((col, i) => (
+                    {[t.client.tableDate, t.client.tableWeight, t.client.tableFat, t.client.tableMuscle, "BMI", ""].map((col, i) => (
                       <th key={i} className={`px-6 py-4 text-[10px] text-outline uppercase tracking-wider ${i === 5 ? "text-right" : ""}`} style={{ fontFamily: "Inter, sans-serif" }}>{col}</th>
                     ))}
                   </tr>
@@ -474,7 +495,7 @@ export default function PatientProfilePage() {
                           {openRowMenu === idx && (
                             <div className="absolute right-6 top-full mt-1 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-lg py-1.5 z-50 min-w-[140px]">
                               <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-error hover:bg-error/5" onClick={() => handleDeleteRow(idx)}>
-                                <span className="material-symbols-outlined text-error" style={{ fontSize: "16px" }}>delete</span> Delete
+                                <span className="material-symbols-outlined text-error" style={{ fontSize: "16px" }}>delete</span> {t.common.delete}
                               </button>
                             </div>
                           )}
@@ -492,17 +513,17 @@ export default function PatientProfilePage() {
 
       {/* Log Data Modal */}
       {showLogData && (
-        <Modal title="Log Measurement" onClose={() => setShowLogData(false)}>
+        <Modal title={t.client.logMeasurement} onClose={() => setShowLogData(false)}>
           <form onSubmit={handleLogData} className="space-y-4">
             <div>
-              <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Date</label>
+              <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.common.date}</label>
               <input type="date" required value={logForm.date} onChange={e => setLogForm(p => ({ ...p, date: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { key: "weight", label: "Weight (kg)", placeholder: "70.4" },
-                { key: "fat", label: "Body Fat %", placeholder: "22.4" },
-                { key: "muscle", label: "Muscle Mass (kg)", placeholder: "51.2" },
+                { key: "weight", label: t.client.weightKg, placeholder: "70.4" },
+                { key: "fat", label: t.client.bodyFatPct, placeholder: "22.4" },
+                { key: "muscle", label: t.client.muscleMassKg, placeholder: "51.2" },
                 { key: "bmi", label: "BMI", placeholder: "23.8" },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
@@ -512,9 +533,9 @@ export default function PatientProfilePage() {
               ))}
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setShowLogData(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
+              <button type="button" onClick={() => setShowLogData(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">{t.common.cancel}</button>
               <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors disabled:opacity-60 flex items-center gap-2">
-                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> Saving...</> : "Save Measurement"}
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> {t.client.saving}</> : t.client.saveMeasurement}
               </button>
             </div>
           </form>
@@ -523,28 +544,28 @@ export default function PatientProfilePage() {
 
       {/* Edit Modal */}
       {showEdit && (
-        <Modal title="Edit Patient Data" onClose={() => setShowEdit(false)}>
+        <Modal title={t.client.editPatientData} onClose={() => setShowEdit(false)}>
           <form onSubmit={handleEditSave} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Resting HR (BPM)</label>
+                <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.restingHRLabel}</label>
                 <input type="number" value={editForm.restingHR} onChange={e => setEditForm(p => ({ ...p, restingHR: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
-                <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Blood Pressure</label>
+                <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.bloodPressure}</label>
                 <input type="text" value={editForm.bp} onChange={e => setEditForm(p => ({ ...p, bp: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="118/76" />
               </div>
             </div>
             <div>
-              <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>Protocol</label>
+              <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.protocolLabel}</label>
               <select value={editForm.protocol} onChange={e => setEditForm(p => ({ ...p, protocol: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20">
                 {["Anti-Inflammatory Protocol", "Weight Management", "Diabetic Management", "Hypertension Diet", "Sports Nutrition", "GI Restoration", "Metabolic Reset"].map(pr => <option key={pr}>{pr}</option>)}
               </select>
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setShowEdit(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">Cancel</button>
+              <button type="button" onClick={() => setShowEdit(false)} className="px-5 py-2.5 text-sm text-outline border border-outline-variant rounded-full hover:bg-surface-container-low transition-colors">{t.common.cancel}</button>
               <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm bg-primary text-white font-semibold rounded-full hover:bg-primary-container transition-colors disabled:opacity-60 flex items-center gap-2">
-                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> Saving...</> : "Save Changes"}
+                {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span> {t.client.saving}</> : t.client.saveChanges}
               </button>
             </div>
           </form>
@@ -575,9 +596,9 @@ export default function PatientProfilePage() {
               {/* Stats row */}
               <div className="grid grid-cols-4 divide-x divide-white/20">
                 {[
-                  { label: "Kilo", value: activeMeasurement.measurement.weight, unit: "kg" },
-                  { label: "Yağ Oranı", value: activeMeasurement.measurement.fat, unit: "%" },
-                  { label: "Kas Kütlesi", value: activeMeasurement.measurement.muscle, unit: "kg" },
+                  { label: t.client.weightStat, value: activeMeasurement.measurement.weight, unit: "kg" },
+                  { label: t.client.fatRateStat, value: activeMeasurement.measurement.fat, unit: "%" },
+                  { label: t.client.muscleStatLabel, value: activeMeasurement.measurement.muscle, unit: "kg" },
                   { label: "BMI", value: activeMeasurement.measurement.bmi, unit: "" },
                 ].map((s) => (
                   <div key={s.label} className="px-4 first:pl-0 last:pr-0">

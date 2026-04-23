@@ -146,27 +146,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-4 gap-8 mb-16">
-            {[
-              { label: t.dashboard.active, value: patients.filter((p) => p.status === "Active").length.toString() },
-              { label: t.reports.totalPatients, value: patients.length.toString() },
-              { label: t.dashboard.critical, value: patients.filter((p) => p.status === "Critical").length.toString() },
-              { label: "AI Confidence", value: "99.2%", highlight: true },
-            ].map((stat) => (
-              <div key={stat.label} className="p-2">
-                <p className="text-outline text-[11px] uppercase tracking-widest mb-1 font-semibold" style={{ fontFamily: "Inter, sans-serif" }}>
-                  {stat.label}
-                </p>
-                <p
-                  className={`text-3xl font-bold ${stat.highlight ? "text-secondary" : "text-on-surface"}`}
-                  style={{ fontFamily: "Manrope, sans-serif" }}
-                >
-                  {stat.value}
-                </p>
-              </div>
-            ))}
-          </div>
 
           {/* Table */}
           <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
@@ -295,32 +274,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* AI Insight */}
-          <div className="mt-12 p-8 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  auto_awesome
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-primary mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
-                  {t.nav.aiAnalysis}
-                </h3>
-                <p className="text-[13px] text-on-surface-variant max-w-xl">
-                  {patients.filter((p) => p.status === "Critical").length > 0
-                    ? `${patients.filter((p) => p.status === "Critical").length} ${t.dashboard.criticalInsight}`
-                    : t.dashboard.inflammatoryInsight}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => router.push("/reports")}
-              className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:shadow-lg transition-all active:scale-95"
-            >
-              {t.nav.reports}
-            </button>
-          </div>
         </section>
       </main>
 

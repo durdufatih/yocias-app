@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://clinicalatelier.com",
-        "X-Title": "Clinical Atelier",
+        "HTTP-Referer": "https://yocias.com",
+        "X-Title": "Yocias",
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
