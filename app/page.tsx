@@ -81,6 +81,97 @@ export default function LandingPage() {
         <p className="text-xs text-outline mt-5" style={{ fontFamily: "Inter, sans-serif" }}>{l.noCard}</p>
       </section>
 
+      {/* Demo */}
+      <section className="max-w-5xl mx-auto px-8 pb-20">
+        <div className="rounded-2xl overflow-hidden border border-outline-variant/20 shadow-2xl shadow-primary/5">
+          {/* Browser chrome */}
+          <div className="bg-surface-container px-4 py-3 flex items-center gap-3 border-b border-outline-variant/20">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-400/70" />
+              <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
+              <div className="w-3 h-3 rounded-full bg-green-400/70" />
+            </div>
+            <div className="flex-1 bg-surface-container-low rounded-md px-3 py-1 text-xs text-outline text-center" style={{ fontFamily: "Inter, sans-serif" }}>
+              app.yocias.com/dashboard
+            </div>
+          </div>
+          {/* App frame */}
+          <div className="flex h-[420px] bg-background">
+            {/* Sidebar */}
+            <div className="w-14 bg-surface-container-low border-r border-outline-variant/15 flex flex-col items-center py-4 gap-4">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-2">
+                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>spa</span>
+              </div>
+              {["group", "monitoring", "psychology", "calendar_today"].map((icon, i) => (
+                <div key={icon} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${i === 0 ? "bg-primary/10" : "hover:bg-surface-container"}`}>
+                  <span className={`material-symbols-outlined ${i === 0 ? "text-primary" : "text-outline"}`} style={{ fontSize: "18px" }}>{icon}</span>
+                </div>
+              ))}
+            </div>
+            {/* Main content */}
+            <div className="flex-1 flex overflow-hidden">
+              {/* Patient list */}
+              <div className="w-64 border-r border-outline-variant/15 p-4 flex flex-col gap-3 overflow-hidden">
+                <p className="text-[11px] font-bold text-outline uppercase tracking-widest mb-1" style={{ fontFamily: "Inter, sans-serif" }}>Danışanlar</p>
+                {[
+                  { name: "Ayşe Kaya", status: "İyi", color: "text-green-600 bg-green-50", weight: "68.2 kg", active: true },
+                  { name: "Mehmet Demir", status: "Takip", color: "text-yellow-600 bg-yellow-50", weight: "92.5 kg", active: false },
+                  { name: "Zeynep Çelik", status: "Kritik", color: "text-red-600 bg-red-50", weight: "74.1 kg", active: false },
+                  { name: "Ali Yıldız", status: "İyi", color: "text-green-600 bg-green-50", weight: "81.0 kg", active: false },
+                ].map((p) => (
+                  <div key={p.name} className={`rounded-xl p-3 cursor-pointer transition-all ${p.active ? "bg-primary/8 border border-primary/20" : "hover:bg-surface-container-low"}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{p.name}</p>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${p.color}`}>{p.status}</span>
+                    </div>
+                    <p className="text-[11px] text-outline">{p.weight}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Detail panel */}
+              <div className="flex-1 p-5 overflow-hidden flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Ayşe Kaya</h3>
+                    <p className="text-xs text-outline">34 yaş • Son ölçüm: 2 gün önce</p>
+                  </div>
+                  <div className="px-3 py-1 bg-green-50 rounded-full text-xs font-bold text-green-600">İyi</div>
+                </div>
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Kilo", value: "68.2 kg", delta: "▼ 3.1 kg", good: true },
+                    { label: "BMI", value: "24.1", delta: "▼ 1.2", good: true },
+                    { label: "Yağ Oranı", value: "%28.4", delta: "▼ 2.3%", good: true },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-surface-container-lowest rounded-xl p-3 border border-outline-variant/15">
+                      <p className="text-[10px] text-outline mb-1" style={{ fontFamily: "Inter, sans-serif" }}>{s.label}</p>
+                      <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{s.value}</p>
+                      <p className={`text-[10px] font-semibold mt-0.5 ${s.good ? "text-green-600" : "text-red-500"}`}>{s.delta}</p>
+                    </div>
+                  ))}
+                </div>
+                {/* AI Insight */}
+                <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>psychology</span>
+                    <p className="text-xs font-bold text-primary" style={{ fontFamily: "Manrope, sans-serif" }}>Klinik Özet</p>
+                    <div className="ml-auto flex gap-1">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" style={{ animationDelay: `${i * 200}ms` }} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-on-surface/80 leading-relaxed">
+                    Danışan 6 haftada <span className="font-semibold text-primary">3.1 kg</span> kaybetti. Yağ oranı %2.3 düşüş gösterdi. Kas kütlesi korunuyor. Bir sonraki kontrolde vitamin D takviyesi değerlendirilmeli.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Stats bar */}
       <section className="border-y border-outline-variant/20 bg-surface-container-low/50">
         <div className="max-w-6xl mx-auto px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
