@@ -47,7 +47,6 @@ export default function LandingPage() {
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-outline hover:text-on-surface transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>{l.featuresNav}</a>
             <a href="#how-it-works" className="text-sm text-outline hover:text-on-surface transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>{l.howItWorksNav}</a>
-            <a href="#pricing" className="text-sm text-outline hover:text-on-surface transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>{l.pricingNav}</a>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="px-5 py-2 text-sm font-semibold text-on-surface border border-outline-variant/40 rounded-full hover:bg-surface-container-low transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>
@@ -139,64 +138,6 @@ export default function LandingPage() {
                 <div className="text-5xl font-extrabold text-primary/10 mb-4" style={{ fontFamily: "Manrope, sans-serif" }}>{step.num}</div>
                 <h3 className="text-lg font-bold text-on-surface mb-2" style={{ fontFamily: "Manrope, sans-serif" }}>{step.title}</h3>
                 <p className="text-sm text-outline leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="py-24">
-        <div className="max-w-6xl mx-auto px-8">
-          <div className="text-center mb-16">
-            <p className="text-[11px] font-bold text-primary uppercase tracking-widest mb-3" style={{ fontFamily: "Inter, sans-serif" }}>{l.pricingLabel}</p>
-            <h2 className="text-4xl font-extrabold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{l.pricingTitle}</h2>
-            <p className="text-outline mt-4 max-w-md mx-auto text-sm leading-relaxed">{l.pricingDesc}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              {
-                name: l.soloName, price: "49", desc: l.soloDesc,
-                features: [l.soloF1, l.soloF2, l.soloF3, l.soloF4],
-                cta: l.getStarted, highlight: false,
-              },
-              {
-                name: l.clinicalName, price: "149", desc: l.clinicalDesc,
-                features: [l.clinicalF1, l.clinicalF2, l.clinicalF3, l.clinicalF4, l.clinicalF5],
-                cta: l.startTrial, highlight: true,
-              },
-              {
-                name: l.enterpriseName, price: l.custom, desc: l.enterpriseDesc,
-                features: [l.enterpriseF1, l.enterpriseF2, l.enterpriseF3, l.enterpriseF4, l.enterpriseF5],
-                cta: l.contactSales, highlight: false,
-              },
-            ].map((plan) => (
-              <div key={plan.name} className={`rounded-2xl p-8 border flex flex-col relative ${plan.highlight ? "bg-primary text-white border-primary shadow-xl shadow-primary/20" : "bg-surface-container-lowest border-outline-variant/20"}`}>
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-secondary text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider" style={{ fontFamily: "Inter, sans-serif" }}>{l.popular}</span>
-                  </div>
-                )}
-                <div className="mb-6">
-                  <p className={`text-[11px] font-bold uppercase tracking-widest mb-2 ${plan.highlight ? "text-primary-fixed" : "text-outline"}`} style={{ fontFamily: "Inter, sans-serif" }}>{plan.name}</p>
-                  <div className="flex items-end gap-1 mb-2">
-                    {plan.price !== l.custom && <span className={`text-sm font-bold ${plan.highlight ? "text-primary-fixed" : "text-outline"}`}>$</span>}
-                    <span className="text-4xl font-extrabold" style={{ fontFamily: "Manrope, sans-serif" }}>{plan.price}</span>
-                    {plan.price !== l.custom && <span className={`text-sm mb-1 ${plan.highlight ? "text-primary-fixed/70" : "text-outline"}`}>{l.mo}</span>}
-                  </div>
-                  <p className={`text-sm ${plan.highlight ? "text-primary-fixed/80" : "text-outline"}`}>{plan.desc}</p>
-                </div>
-                <ul className="space-y-3 flex-1 mb-8">
-                  {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-center gap-2.5">
-                      <span className={`material-symbols-outlined flex-shrink-0 ${plan.highlight ? "text-primary-fixed" : "text-primary"}`} style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>check_circle</span>
-                      <span className={`text-sm ${plan.highlight ? "text-white/90" : "text-on-surface"}`}>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/signup" onClick={() => posthog.capture("pricing_plan_clicked", { plan: plan.name })} className={`w-full py-3 rounded-full text-sm font-bold text-center transition-all active:scale-95 ${plan.highlight ? "bg-white text-primary hover:bg-primary-fixed" : "bg-primary text-white hover:bg-primary-container"}`} style={{ fontFamily: "Manrope, sans-serif" }}>
-                  {plan.cta}
-                </Link>
               </div>
             ))}
           </div>
