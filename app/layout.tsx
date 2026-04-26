@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { LanguageProvider } from "./lib/i18n";
 import { PHProvider } from "./lib/posthog";
@@ -26,6 +27,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
+      <Script src="https://www.googletagmanager.com/gtag/js?id=AW-965347290" strategy="afterInteractive" />
+      <Script id="google-ads" strategy="afterInteractive">{`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-965347290');
+      `}</Script>
       <body className="min-h-screen antialiased">
         <PHProvider>
           <LanguageProvider>
