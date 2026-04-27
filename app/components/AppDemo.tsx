@@ -14,7 +14,8 @@ function PatientScreen({ d }: { d: ReturnType<typeof useI18n>["t"]["demo"] }) {
 
   return (
     <div className="flex h-full gap-4">
-      <div className="w-56 flex flex-col gap-2">
+      {/* Patient list — hidden on mobile */}
+      <div className="hidden md:flex w-52 flex-col gap-2">
         <p className="text-[10px] font-bold text-outline uppercase tracking-widest mb-1" style={{ fontFamily: "Inter, sans-serif" }}>{d.patients}</p>
         {patients.map((p, i) => (
           <div key={p.name} className={`rounded-xl p-3 border transition-all ${i === 0 ? "border-primary/30 bg-primary/5" : "border-outline-variant/15 bg-surface-container-lowest"}`}>
@@ -85,7 +86,7 @@ function AIScreen({ d }: { d: ReturnType<typeof useI18n>["t"]["demo"] }) {
 
   return (
     <div className="flex h-full gap-4">
-      <div className="w-48 flex flex-col gap-3">
+      <div className="hidden md:flex w-44 flex-col gap-3">
         <div className={`rounded-xl border-2 border-dashed p-4 text-center transition-all ${phase === "upload" ? "border-primary/40 bg-primary/5" : "border-outline-variant/20 bg-surface-container-lowest"}`}>
           <span className="material-symbols-outlined text-primary block mx-auto mb-2" style={{ fontVariationSettings: "'FILL' 1", fontSize: "28px" }}>
             {phase === "upload" ? "upload_file" : "description"}
@@ -172,7 +173,7 @@ function ReportScreen({ d }: { d: ReturnType<typeof useI18n>["t"]["demo"] }) {
     <div className="flex h-full gap-4">
       <div className="flex-1 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Mehmet Demir — {d.reportTitle}</p>
+          <p className="text-xs font-bold text-on-surface truncate" style={{ fontFamily: "Manrope, sans-serif" }}>Mehmet Demir — {d.reportTitle}</p>
           <div className="flex gap-1">
             {["1W", "3W", "6W"].map((p, i) => (
               <button key={p} className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${i === 2 ? "bg-primary text-white" : "text-outline"}`}>{p}</button>
@@ -203,7 +204,7 @@ function ReportScreen({ d }: { d: ReturnType<typeof useI18n>["t"]["demo"] }) {
           </svg>
         </div>
       </div>
-      <div className="w-44 flex flex-col gap-2">
+      <div className="hidden md:flex w-44 flex-col gap-2">
         <p className="text-[10px] font-bold text-outline uppercase tracking-widest" style={{ fontFamily: "Inter, sans-serif" }}>{d.summary}</p>
         {[
           { label: d.totalLoss, value: "−7.2 kg" },
@@ -251,7 +252,21 @@ export function AppDemo() {
 
   return (
     <>
-      <div className="rounded-2xl overflow-hidden border border-outline-variant/20 shadow-2xl shadow-primary/8">
+      {/* Top banner */}
+      <button
+        onClick={() => setShowLead(true)}
+        className="w-full flex items-center justify-center gap-3 py-4 mb-3 bg-primary rounded-2xl hover:bg-primary-container transition-colors group shadow-lg shadow-primary/20"
+      >
+        <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "20px" }}>play_circle</span>
+        <span className="text-base font-bold text-white" style={{ fontFamily: "Manrope, sans-serif" }}>{l.demoBanner}</span>
+        <span className="material-symbols-outlined text-white/70" style={{ fontSize: "18px" }}>arrow_forward</span>
+      </button>
+
+      {/* Demo frame */}
+      <div
+        className="rounded-2xl overflow-hidden border border-outline-variant/20 shadow-2xl shadow-primary/8 cursor-pointer"
+        onClick={() => setShowLead(true)}
+      >
         {/* Browser chrome */}
         <div className="bg-surface-container px-4 py-3 flex items-center gap-3 border-b border-outline-variant/20">
           <div className="flex gap-1.5">
@@ -264,9 +279,9 @@ export function AppDemo() {
           </div>
         </div>
         {/* App shell */}
-        <div className="flex h-[400px] bg-background">
-          {/* Sidebar */}
-          <div className="w-14 bg-surface-container-low border-r border-outline-variant/15 flex flex-col items-center py-4 gap-3">
+        <div className="flex h-[340px] md:h-[400px] bg-background" onClick={(e) => e.stopPropagation()}>
+          {/* Sidebar — hidden on mobile */}
+          <div className="hidden md:flex w-14 bg-surface-container-low border-r border-outline-variant/15 flex-col items-center py-4 gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-3">
               <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>spa</span>
             </div>
@@ -279,15 +294,16 @@ export function AppDemo() {
           </div>
           {/* Main */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="px-5 py-3 border-b border-outline-variant/15 flex items-center justify-between">
+            <div className="px-4 md:px-5 py-3 border-b border-outline-variant/15 flex items-center justify-between">
               <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{TABS[active]}</p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {TABS.map((_, i) => (
-                  <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === active ? "w-6 bg-primary" : "w-1.5 bg-outline-variant/40"}`} />
+                  <button key={i} onClick={() => { setVisible(false); setTimeout(() => { setActive(i); setVisible(true); }, 300); }}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-6 bg-primary" : "w-1.5 bg-outline-variant/40"}`} />
                 ))}
               </div>
             </div>
-            <div className="flex-1 p-5 overflow-hidden transition-all duration-300"
+            <div className="flex-1 p-3 md:p-5 overflow-hidden transition-all duration-300"
               style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(8px)" }}>
               {active === 0 && <PatientScreen d={d} />}
               {active === 1 && <AIScreen key={visible ? "ai-v" : "ai-h"} d={d} />}
@@ -295,14 +311,6 @@ export function AppDemo() {
             </div>
           </div>
         </div>
-        {/* Demo banner */}
-        <button
-          onClick={() => setShowLead(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-primary/6 hover:bg-primary/10 border-t border-primary/15 transition-colors group"
-        >
-          <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1", fontSize: "14px" }}>visibility</span>
-          <span className="text-xs font-semibold text-primary group-hover:underline" style={{ fontFamily: "Inter, sans-serif" }}>{l.demoBanner}</span>
-        </button>
       </div>
 
       {showLead && <LeadModal type="detail_click" onClose={() => setShowLead(false)} />}
