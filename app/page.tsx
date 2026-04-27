@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import posthog from "posthog-js";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AppDemo } from "./components/AppDemo";
+import { LeadModal } from "./components/LeadModal";
 import { useI18n } from "./lib/i18n";
 
 export default function LandingPage() {
   const { t, lang, setLang } = useI18n();
+  const [showLead, setShowLead] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("lang")) return;
@@ -154,12 +156,15 @@ export default function LandingPage() {
             <Link href="/signup" className="px-10 py-4 bg-primary text-white font-bold rounded-full hover:bg-primary-container transition-all active:scale-95 shadow-sm text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
               {l.createAccount}
             </Link>
-            <Link href="/login" className="px-10 py-4 border border-outline-variant text-on-surface font-semibold rounded-full hover:bg-surface-container-low transition-all text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
-              {l.signInAccount}
-            </Link>
+            <button onClick={() => { setShowLead(true); posthog.capture("demo_request_clicked"); }}
+              className="px-10 py-4 border border-primary text-primary font-semibold rounded-full hover:bg-primary/5 transition-all text-sm" style={{ fontFamily: "Manrope, sans-serif" }}>
+              {l.demoRequestCta}
+            </button>
           </div>
         </div>
       </section>
+
+      {showLead && <LeadModal type="demo_request" onClose={() => setShowLead(false)} />}
 
       {/* Footer */}
       <footer className="border-t border-outline-variant/20 py-10">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useI18n } from "../lib/i18n";
+import { LeadModal } from "./LeadModal";
 
 function PatientScreen({ d }: { d: ReturnType<typeof useI18n>["t"]["demo"] }) {
   const patients = [
@@ -230,10 +231,12 @@ const INTERVAL = 3500;
 export function AppDemo() {
   const { t } = useI18n();
   const d = t.demo;
+  const l = t.landing;
   const TABS = [d.tab1, d.tab2, d.tab3];
 
   const [active, setActive] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [showLead, setShowLead] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -247,50 +250,62 @@ export function AppDemo() {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-outline-variant/20 shadow-2xl shadow-primary/8">
-      {/* Browser chrome */}
-      <div className="bg-surface-container px-4 py-3 flex items-center gap-3 border-b border-outline-variant/20">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-400/70" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
-          <div className="w-3 h-3 rounded-full bg-green-400/70" />
-        </div>
-        <div className="flex-1 bg-surface-container-low rounded-md px-3 py-1 text-xs text-outline text-center" style={{ fontFamily: "Inter, sans-serif" }}>
-          app.yocias.com
-        </div>
-      </div>
-      {/* App shell */}
-      <div className="flex h-[400px] bg-background">
-        {/* Sidebar */}
-        <div className="w-14 bg-surface-container-low border-r border-outline-variant/15 flex flex-col items-center py-4 gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-3">
-            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>spa</span>
+    <>
+      <div className="rounded-2xl overflow-hidden border border-outline-variant/20 shadow-2xl shadow-primary/8">
+        {/* Browser chrome */}
+        <div className="bg-surface-container px-4 py-3 flex items-center gap-3 border-b border-outline-variant/20">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-400/70" />
+            <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
+            <div className="w-3 h-3 rounded-full bg-green-400/70" />
           </div>
-          {ICONS.map((icon, i) => (
-            <button key={icon} onClick={() => { setVisible(false); setTimeout(() => { setActive(i); setVisible(true); }, 300); }}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${active === i ? "bg-primary/10" : "hover:bg-surface-container"}`}>
-              <span className={`material-symbols-outlined ${active === i ? "text-primary" : "text-outline"}`} style={{ fontSize: "18px" }}>{icon}</span>
-            </button>
-          ))}
+          <div className="flex-1 bg-surface-container-low rounded-md px-3 py-1 text-xs text-outline text-center" style={{ fontFamily: "Inter, sans-serif" }}>
+            app.yocias.com
+          </div>
         </div>
-        {/* Main */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-5 py-3 border-b border-outline-variant/15 flex items-center justify-between">
-            <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{TABS[active]}</p>
-            <div className="flex items-center gap-2">
-              {TABS.map((_, i) => (
-                <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === active ? "w-6 bg-primary" : "w-1.5 bg-outline-variant/40"}`} />
-              ))}
+        {/* App shell */}
+        <div className="flex h-[400px] bg-background">
+          {/* Sidebar */}
+          <div className="w-14 bg-surface-container-low border-r border-outline-variant/15 flex flex-col items-center py-4 gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-3">
+              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "16px" }}>spa</span>
+            </div>
+            {ICONS.map((icon, i) => (
+              <button key={icon} onClick={() => { setVisible(false); setTimeout(() => { setActive(i); setVisible(true); }, 300); }}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${active === i ? "bg-primary/10" : "hover:bg-surface-container"}`}>
+                <span className={`material-symbols-outlined ${active === i ? "text-primary" : "text-outline"}`} style={{ fontSize: "18px" }}>{icon}</span>
+              </button>
+            ))}
+          </div>
+          {/* Main */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="px-5 py-3 border-b border-outline-variant/15 flex items-center justify-between">
+              <p className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{TABS[active]}</p>
+              <div className="flex items-center gap-2">
+                {TABS.map((_, i) => (
+                  <div key={i} className={`h-1 rounded-full transition-all duration-300 ${i === active ? "w-6 bg-primary" : "w-1.5 bg-outline-variant/40"}`} />
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 p-5 overflow-hidden transition-all duration-300"
+              style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(8px)" }}>
+              {active === 0 && <PatientScreen d={d} />}
+              {active === 1 && <AIScreen key={visible ? "ai-v" : "ai-h"} d={d} />}
+              {active === 2 && <ReportScreen key={visible ? "rep-v" : "rep-h"} d={d} />}
             </div>
           </div>
-          <div className="flex-1 p-5 overflow-hidden transition-all duration-300"
-            style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(8px)" }}>
-            {active === 0 && <PatientScreen d={d} />}
-            {active === 1 && <AIScreen key={visible ? "ai-v" : "ai-h"} d={d} />}
-            {active === 2 && <ReportScreen key={visible ? "rep-v" : "rep-h"} d={d} />}
-          </div>
         </div>
+        {/* Demo banner */}
+        <button
+          onClick={() => setShowLead(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 bg-primary/6 hover:bg-primary/10 border-t border-primary/15 transition-colors group"
+        >
+          <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1", fontSize: "14px" }}>visibility</span>
+          <span className="text-xs font-semibold text-primary group-hover:underline" style={{ fontFamily: "Inter, sans-serif" }}>{l.demoBanner}</span>
+        </button>
       </div>
-    </div>
+
+      {showLead && <LeadModal type="detail_click" onClose={() => setShowLead(false)} />}
+    </>
   );
 }
