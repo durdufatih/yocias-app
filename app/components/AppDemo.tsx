@@ -279,7 +279,7 @@ export function AppDemo() {
           </div>
         </div>
         {/* App shell */}
-        <div className="flex h-[340px] md:h-[400px] bg-background" onClick={(e) => e.stopPropagation()}>
+        <div className="flex h-[340px] md:h-[400px] bg-background">
           {/* Sidebar — hidden on mobile */}
           <div className="hidden md:flex w-14 bg-surface-container-low border-r border-outline-variant/15 flex-col items-center py-4 gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-3">
