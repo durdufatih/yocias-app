@@ -280,7 +280,7 @@ const tr = {
   },
   landing: {
     badge: "AI Destekli Beslenme Platformu",
-    heroTitle1: "Klinisyenlerin hak ettiği",
+    heroTitle1: "Diyetisyenlerin hak ettiği",
     heroTitle2: "çalışma alanı.",
     heroDesc: "Danışanlarınızı yönetin, vücut analiz raporlarını yapay zeka ile inceleyin ve klinik ilerlemeyi takip edin — diyetisyenler için tasarlanmış, hassas bir platformda.",
     startFree: "Ücretsiz başla →",
