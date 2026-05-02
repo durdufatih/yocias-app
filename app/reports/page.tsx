@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import BottomNav from "../components/BottomNav";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
 import { useAuth } from "../lib/useAuth";
@@ -14,7 +15,7 @@ const PAGE_SIZE = 8;
 
 function StatCard({ label, value, sub, icon, accent }: { label: string; value: string | number; sub?: string; icon: string; accent?: string }) {
   return (
-    <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20 flex items-start gap-4">
+    <div className="bg-surface-container-lowest rounded-2xl p-4 md:p-6 border border-outline-variant/20 flex items-start gap-3 md:gap-4">
       <div className={`p-3 rounded-xl ${accent ?? "bg-primary/10"}`}>
         <span className="material-symbols-outlined text-xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
       </div>
@@ -91,13 +92,13 @@ export default function ReportsPage() {
   return (
     <div className="bg-surface min-h-screen">
       <Sidebar />
-      <main className="ml-64 min-h-screen">
+      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
         <TopBar title={t.reports.title} />
 
-        <div className="p-10 max-w-6xl mx-auto space-y-8">
+        <div className="p-4 md:p-10 max-w-6xl mx-auto space-y-5 md:space-y-8">
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
             <StatCard label={t.reports.totalPatients} value={loading ? "…" : stats.total} icon="group" sub={`${stats.active} ${t.reports.activeCount}`} />
             <StatCard label={t.reports.totalMeasurements} value={loading ? "…" : stats.totalMeas} icon="straighten" sub={`${stats.measThisMonth} ${t.reports.thisMonth}`} />
             <StatCard label={t.reports.avgBmi} value={loading ? "…" : stats.avgBmi} icon="monitor_weight" sub={t.reports.allMeasurements} />
@@ -105,7 +106,7 @@ export default function ReportsPage() {
           </div>
 
           {/* Status Distribution + Recent Measurements */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
 
             {/* Status breakdown */}
             <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20">
@@ -142,7 +143,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Recent Measurements */}
-            <div className="col-span-2 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 overflow-hidden">
+            <div className="md:col-span-2 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 overflow-hidden">
               <div className="px-6 py-5 border-b border-outline-variant/10">
                 <h3 className="text-sm font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{t.reports.recentMeasurements}</h3>
               </div>
@@ -276,6 +277,7 @@ export default function ReportsPage() {
         </div>
       </main>
       <Toasts toasts={toasts} remove={remove} />
+      <BottomNav />
     </div>
   );
 }

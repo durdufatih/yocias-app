@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import BottomNav from "../components/BottomNav";
 import Modal from "../components/Modal";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
@@ -97,42 +98,35 @@ export default function DashboardPage() {
   return (
     <div className="bg-background min-h-screen">
       <Sidebar />
-      <main className="pl-64 min-h-screen">
+      <main className="md:pl-64 min-h-screen pb-20 md:pb-0">
         <TopBar search={search} onSearch={handleSearch} />
-        <section className="p-10 max-w-7xl mx-auto">
+        <section className="p-4 md:p-10 max-w-7xl mx-auto">
 
           {/* Header */}
-          <div className="flex justify-between items-start mb-12">
+          <div className="flex justify-between items-center mb-6 md:mb-12">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight text-on-background mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-on-background mb-1" style={{ fontFamily: "Manrope, sans-serif" }}>
                 {t.dashboard.title}
               </h2>
-              <p className="text-outline text-sm">{t.nav.clients}</p>
+              <p className="text-outline text-sm hidden md:block">{t.nav.clients}</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3">
               <div className="relative">
                 <button
                   onClick={() => setShowFilter(!showFilter)}
-                  className="px-5 py-2 text-sm bg-surface-container-low text-on-surface font-medium rounded-lg hover:bg-surface-container-high transition-colors flex items-center gap-2"
+                  className="px-3 md:px-5 py-2 text-sm bg-surface-container-low text-on-surface font-medium rounded-lg hover:bg-surface-container-high transition-colors flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-base">filter_list</span>
-                  {filterStatus === "All" ? t.dashboard.allStatuses : filterStatus}
+                  <span className="hidden md:inline">{filterStatus === "All" ? t.dashboard.allStatuses : filterStatus}</span>
                   {filterStatus !== "All" && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
                 </button>
                 {showFilter && (
                   <div className="absolute top-full mt-2 right-0 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-lg py-1.5 z-50 min-w-[160px]">
                     {(["All", ...ALL_STATUSES] as const).map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => handleFilter(s)}
-                        className={`w-full px-4 py-2.5 text-sm text-left transition-colors flex items-center justify-between ${filterStatus === s ? "text-primary font-semibold" : "text-on-surface hover:bg-surface-container-low"}`}
-                      >
+                      <button key={s} onClick={() => handleFilter(s)}
+                        className={`w-full px-4 py-2.5 text-sm text-left transition-colors flex items-center justify-between ${filterStatus === s ? "text-primary font-semibold" : "text-on-surface hover:bg-surface-container-low"}`}>
                         {s}
-                        {filterStatus === s && (
-                          <span className="material-symbols-outlined text-base text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                            check
-                          </span>
-                        )}
+                        {filterStatus === s && <span className="material-symbols-outlined text-base text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>}
                       </button>
                     ))}
                   </div>
@@ -140,136 +134,119 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => { posthog.capture("patient_add_started"); setShowNewPatient(true); }}
-                className="px-5 py-2 text-sm bg-primary text-white font-semibold rounded-lg flex items-center gap-2 active:scale-95 transition-all"
+                className="px-3 md:px-5 py-2 text-sm bg-primary text-white font-semibold rounded-lg flex items-center gap-2 active:scale-95 transition-all"
               >
                 <span className="material-symbols-outlined text-sm">person_add</span>
-                {t.dashboard.addPatient}
+                <span className="hidden md:inline">{t.dashboard.addPatient}</span>
               </button>
             </div>
           </div>
 
+          {/* Mobile: Card list */}
+          <div className="md:hidden flex flex-col gap-3">
+            {loadingData ? (
+              <div className="py-16 text-center">
+                <span className="material-symbols-outlined text-primary text-3xl animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>
+              </div>
+            ) : paginated.length === 0 ? (
+              <p className="py-16 text-center text-outline text-sm">{t.dashboard.noPatients}</p>
+            ) : paginated.map((patient) => (
+              <Link key={patient.id} href={`/clients/${patient.id}`}
+                className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 p-4 flex items-center gap-4 active:scale-[0.98] transition-all">
+                <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                  {patient.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-on-surface truncate">{patient.name}</p>
+                  <p className="text-[11px] text-outline">{patient.lastVisit ?? "—"}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded ${statusStyles[patient.status]}`}>
+                    {patient.status}
+                  </span>
+                  <span className={`text-[10px] font-semibold ${trendTextColor[patient.trend]}`}>{patient.trend}</span>
+                </div>
+                <span className="material-symbols-outlined text-outline text-lg">chevron_right</span>
+              </Link>
+            ))}
+            {/* Mobile pagination */}
+            <div className="flex justify-center gap-2 pt-2">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-outline disabled:opacity-30">
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+              <span className="flex items-center text-sm text-outline">{page} / {totalPages}</span>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-low text-outline disabled:opacity-30">
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
 
-          {/* Table */}
-          <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+          {/* Desktop: Table */}
+          <div className="hidden md:block bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant/10">
                   {[t.dashboard.patient, t.dashboard.status, t.dashboard.lastVisit, t.dashboard.trend, ""].map((col, i) => (
-                    <th
-                      key={col}
-                      className={`px-8 py-4 text-outline text-[10px] uppercase tracking-widest font-bold ${i === 4 ? "text-right" : ""}`}
-                      style={{ fontFamily: "Inter, sans-serif" }}
-                    >
-                      {col}
-                    </th>
+                    <th key={col} className={`px-8 py-4 text-outline text-[10px] uppercase tracking-widest font-bold ${i === 4 ? "text-right" : ""}`} style={{ fontFamily: "Inter, sans-serif" }}>{col}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {loadingData ? (
-                  <tr>
-                    <td colSpan={5} className="px-8 py-16 text-center">
-                      <span className="material-symbols-outlined text-primary text-3xl animate-spin" style={{ animationDuration: "1s" }}>
-                        progress_activity
-                      </span>
-                    </td>
-                  </tr>
+                  <tr><td colSpan={5} className="px-8 py-16 text-center"><span className="material-symbols-outlined text-primary text-3xl animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span></td></tr>
                 ) : paginated.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-8 py-16 text-center text-outline text-sm">
-                      {patients.length === 0
-                        ? t.dashboard.noPatients
-                        : `"${search}" — ${t.dashboard.noPatients}`}
+                  <tr><td colSpan={5} className="px-8 py-16 text-center text-outline text-sm">{patients.length === 0 ? t.dashboard.noPatients : `"${search}" — ${t.dashboard.noPatients}`}</td></tr>
+                ) : paginated.map((patient) => (
+                  <tr key={patient.id} className="hover:bg-surface-container-low/30 transition-colors border-b border-outline-variant/5 last:border-0">
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold text-sm">
+                          {patient.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-on-surface">{patient.name}</p>
+                          <p className="text-[11px] text-outline" style={{ fontFamily: "Inter, sans-serif" }}>ID: {patient.id.slice(0, 8).toUpperCase()}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${statusStyles[patient.status]}`} style={{ fontFamily: "Inter, sans-serif" }}>{patient.status}</span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <p className="text-sm text-on-surface font-medium">{patient.lastVisit ?? "—"}</p>
+                      <p className="text-[10px] text-outline" style={{ fontFamily: "Inter, sans-serif" }}>{patient.visitType ?? ""}</p>
+                    </td>
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-20 h-1 bg-surface-container-high rounded-full overflow-hidden">
+                          <div className={`${trendBarColor[patient.trend]} h-full rounded-full`} style={{ width: `${patient.trendPct}%` }} />
+                        </div>
+                        <span className={`text-[11px] font-bold ${trendTextColor[patient.trend]}`} style={{ fontFamily: "Inter, sans-serif" }}>{patient.trend}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-6 text-right">
+                      <Link href={`/clients/${patient.id}`} className="text-outline hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-xl">keyboard_arrow_right</span>
+                      </Link>
                     </td>
                   </tr>
-                ) : (
-                  paginated.map((patient) => (
-                    <tr
-                      key={patient.id}
-                      className="hover:bg-surface-container-low/30 transition-colors border-b border-outline-variant/5 last:border-0"
-                    >
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center text-primary font-bold text-sm">
-                            {patient.name.split(" ").map((n) => n[0]).join("")}
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-on-surface">{patient.name}</p>
-                            <p className="text-[11px] text-outline" style={{ fontFamily: "Inter, sans-serif" }}>
-                              ID: {patient.id.slice(0, 8).toUpperCase()}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span
-                          className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${statusStyles[patient.status]}`}
-                          style={{ fontFamily: "Inter, sans-serif" }}
-                        >
-                          {patient.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <p className="text-sm text-on-surface font-medium">{patient.lastVisit ?? "—"}</p>
-                        <p className="text-[10px] text-outline" style={{ fontFamily: "Inter, sans-serif" }}>
-                          {patient.visitType ?? ""}
-                        </p>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-20 h-1 bg-surface-container-high rounded-full overflow-hidden">
-                            <div
-                              className={`${trendBarColor[patient.trend]} h-full rounded-full`}
-                              style={{ width: `${patient.trendPct}%` }}
-                            />
-                          </div>
-                          <span
-                            className={`text-[11px] font-bold ${trendTextColor[patient.trend]}`}
-                            style={{ fontFamily: "Inter, sans-serif" }}
-                          >
-                            {patient.trend}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <Link href={`/clients/${patient.id}`} className="text-outline hover:text-primary transition-colors">
-                          <span className="material-symbols-outlined text-xl">keyboard_arrow_right</span>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
-
-            {/* Pagination */}
             <div className="px-8 py-6 flex justify-between items-center border-t border-outline-variant/5">
               <p className="text-[11px] text-outline font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
-                Showing {filtered.length === 0 ? 0 : Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–
-                {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} clients
+                {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length}
               </p>
               <div className="flex gap-1">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-outline disabled:opacity-30 transition-colors"
-                >
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-outline disabled:opacity-30 transition-colors">
                   <span className="material-symbols-outlined text-sm">chevron_left</span>
                 </button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[11px] transition-colors ${page === p ? "bg-primary text-white" : "hover:bg-surface-container-low text-outline"}`}
-                  >
-                    {p}
-                  </button>
+                  <button key={p} onClick={() => setPage(p)} className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold text-[11px] transition-colors ${page === p ? "bg-primary text-white" : "hover:bg-surface-container-low text-outline"}`}>{p}</button>
                 ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-outline disabled:opacity-30 transition-colors"
-                >
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-outline disabled:opacity-30 transition-colors">
                   <span className="material-symbols-outlined text-sm">chevron_right</span>
                 </button>
               </div>
@@ -278,6 +255,7 @@ export default function DashboardPage() {
 
         </section>
       </main>
+      <BottomNav />
 
       {/* New Patient Modal */}
       {showNewPatient && (

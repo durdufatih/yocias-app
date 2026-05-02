@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "../../components/Sidebar";
 import TopBar from "../../components/TopBar";
+import BottomNav from "../../components/BottomNav";
 import Modal from "../../components/Modal";
 import Toasts from "../../components/Toast";
 import { useToast } from "../../lib/useToast";
@@ -43,7 +44,7 @@ function SectionCard({ title, icon, children }: { title: string; icon: string; c
 function BodyAnalysisDetail({ data }: { data: BodyAnalysisData }) {
   const { t } = useI18n();
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <SectionCard title={t.client.bodyCompSection} icon="monitor_weight">
         <DetailRow label={t.client.height} value={data.height} unit="cm" />
         <DetailRow label="BMI" value={data.bmi} />
@@ -216,7 +217,7 @@ export default function PatientProfilePage() {
     return (
       <div className="bg-background min-h-screen">
         <Sidebar />
-        <main className="ml-64 min-h-screen flex items-center justify-center">
+        <main className="md:ml-64 min-h-screen flex items-center justify-center">
           <div className="text-center">
             <span className="material-symbols-outlined text-outline text-5xl mb-4 block">person_off</span>
             <h2 className="text-xl font-bold text-on-surface mb-2" style={{ fontFamily: "Manrope, sans-serif" }}>Patient not found</h2>
@@ -296,9 +297,9 @@ export default function PatientProfilePage() {
   return (
     <div className="bg-background min-h-screen">
       <Sidebar />
-      <main className="ml-64 min-h-screen">
+      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
         <TopBar />
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-4 md:space-y-6">
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-outline" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -308,44 +309,48 @@ export default function PatientProfilePage() {
           </div>
 
           {/* Patient Header */}
-          <div className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 rounded-xl bg-primary/15 flex items-center justify-center text-primary font-bold text-2xl" style={{ fontFamily: "Manrope, sans-serif" }}>
+          <div className="bg-surface-container-lowest rounded-xl p-4 md:p-6 border border-outline-variant/10">
+            <div className="flex items-center gap-4 md:gap-6">
+              <div className="w-14 h-14 md:w-20 md:h-20 rounded-xl bg-primary/15 flex items-center justify-center text-primary font-bold text-xl md:text-2xl flex-shrink-0" style={{ fontFamily: "Manrope, sans-serif" }}>
                 {patient.name.split(" ").map((n) => n[0]).join("")}
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-on-background" style={{ fontFamily: "Manrope, sans-serif" }}>{patient.name}</h1>
-                <p className="text-sm text-outline mt-0.5">ID: #{patient.id.slice(0, 8).toUpperCase()} • Joined {patient.joinDate ?? "—"}</p>
-                <div className="flex gap-4 mt-3 flex-wrap">
-                  <span className="text-xs font-semibold text-primary py-1 px-3 bg-primary/5 rounded-full">{editForm.protocol || patient.protocol || "No protocol"}</span>
-                  <span className="text-xs text-outline uppercase tracking-wider mt-1" style={{ fontFamily: "Inter, sans-serif" }}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h1 className="text-lg md:text-2xl font-bold text-on-background truncate" style={{ fontFamily: "Manrope, sans-serif" }}>{patient.name}</h1>
+                    <p className="text-xs text-outline mt-0.5 hidden md:block">ID: #{patient.id.slice(0, 8).toUpperCase()} • Joined {patient.joinDate ?? "—"}</p>
+                  </div>
+                  <button onClick={() => setShowEdit(true)} className="p-2 text-primary hover:bg-primary/5 rounded-full transition-colors flex-shrink-0">
+                    <span className="material-symbols-outlined text-xl">edit</span>
+                  </button>
+                </div>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <span className="text-xs font-semibold text-primary py-0.5 px-2.5 bg-primary/5 rounded-full">{editForm.protocol || patient.protocol || "No protocol"}</span>
+                  <span className="text-xs text-outline uppercase tracking-wider hidden md:inline" style={{ fontFamily: "Inter, sans-serif" }}>
                     {patient.age ? `${patient.age} YRS` : ""}{patient.height ? ` • ${patient.height} CM` : ""}{patient.bloodType ? ` • ${patient.bloodType}` : ""}
                   </span>
                 </div>
-              </div>
-            </div>
-            <div className="flex gap-8 px-8 border-l border-outline-variant/10">
-              <div className="text-center">
-                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.restingHR}</p>
-                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
-                  {editForm.restingHR || patient.restingHR || "—"} <span className="text-xs font-normal text-outline">BPM</span>
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.bp}</p>
-                <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.bp || patient.bp || "—"}</p>
-              </div>
-              {latestWeight && (
-                <div className="text-center">
-                  <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.weightLabel}</p>
-                  <p className="text-xl font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
-                    {latestWeight} <span className="text-xs font-normal text-outline">kg</span>
-                  </p>
+                <div className="flex gap-4 mt-3">
+                  <div>
+                    <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.restingHR}</p>
+                    <p className="text-base font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
+                      {editForm.restingHR || patient.restingHR || "—"} <span className="text-xs font-normal text-outline">BPM</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.bp}</p>
+                    <p className="text-base font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>{editForm.bp || patient.bp || "—"}</p>
+                  </div>
+                  {latestWeight && (
+                    <div>
+                      <p className="text-[10px] text-outline uppercase" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.weightLabel}</p>
+                      <p className="text-base font-bold" style={{ fontFamily: "Manrope, sans-serif" }}>
+                        {latestWeight} <span className="text-xs font-normal text-outline">kg</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
-              <button onClick={() => setShowEdit(true)} className="self-center p-2 text-primary hover:bg-primary/5 rounded-full transition-colors">
-                <span className="material-symbols-outlined">edit</span>
-              </button>
+              </div>
             </div>
           </div>
 
@@ -523,7 +528,7 @@ export default function PatientProfilePage() {
               <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.common.date}</label>
               <input type="date" required value={logForm.date} onChange={e => setLogForm(p => ({ ...p, date: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
                 { key: "weight", label: t.client.weightKg, placeholder: "70.4" },
                 { key: "fat", label: t.client.bodyFatPct, placeholder: "22.4" },
@@ -550,7 +555,7 @@ export default function PatientProfilePage() {
       {showEdit && (
         <Modal title={t.client.editPatientData} onClose={() => setShowEdit(false)}>
           <form onSubmit={handleEditSave} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] text-outline uppercase tracking-wider font-bold block mb-1.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.client.restingHRLabel}</label>
                 <input type="number" value={editForm.restingHR} onChange={e => setEditForm(p => ({ ...p, restingHR: e.target.value }))} className="w-full bg-surface-container-highest rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
@@ -633,6 +638,7 @@ export default function PatientProfilePage() {
 
       {openRowMenu !== null && <div className="fixed inset-0 z-40" onClick={() => setOpenRowMenu(null)} />}
       <Toasts toasts={toasts} remove={remove} />
+      <BottomNav />
     </div>
   );
 }

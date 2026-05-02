@@ -18,7 +18,7 @@ export default function Sidebar() {
     matchPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex flex-col p-4 gap-2 z-50">
+    <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-surface-container-low flex-col p-4 gap-2 z-50">
       {/* Logo */}
       <Link href="/dashboard" className="flex items-center gap-3 px-2 mb-8">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">

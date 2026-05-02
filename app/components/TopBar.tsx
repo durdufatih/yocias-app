@@ -63,13 +63,19 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
 
   return (
     <>
-      <header className="w-full h-16 sticky top-0 z-40 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-8 border-b border-outline-variant/20">
+      <header className="w-full h-14 md:h-16 sticky top-0 z-40 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-4 md:px-8 border-b border-outline-variant/20">
         {/* Left */}
-        <div className="flex items-center gap-4 flex-1 max-w-md">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Mobile logo */}
+          <div className="md:hidden flex items-center gap-2 mr-2">
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "15px" }}>spa</span>
+            </div>
+          </div>
           {title ? (
-            <h2 className="text-lg font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>{title}</h2>
+            <h2 className="text-base md:text-lg font-bold text-on-surface truncate" style={{ fontFamily: "Manrope, sans-serif" }}>{title}</h2>
           ) : (
-            <div className="relative w-full">
+            <div className="relative w-full max-w-xs md:max-w-md">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
               <input
                 className="w-full bg-surface-container-low border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
@@ -82,10 +88,9 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
         </div>
 
         {/* Right */}
-        <div className="flex items-center gap-4">
-
-          {/* Language picker */}
-          <div className="relative">
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Language picker — hidden on mobile */}
+          <div className="relative hidden md:block">
             <button
               onClick={() => setShowLang(!showLang)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors border border-outline-variant/20"
@@ -101,35 +106,35 @@ export default function TopBar({ title, search, onSearch }: TopBarProps) {
                     key={l.code}
                     onClick={() => { posthog.capture("language_changed", { from: lang, to: l.code }); setLang(l.code); setShowLang(false); }}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      lang === l.code
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-on-surface hover:bg-surface-container-low"
+                      lang === l.code ? "bg-primary/10 text-primary font-semibold" : "text-on-surface hover:bg-surface-container-low"
                     }`}
                   >
                     <span className="text-base">{l.flag}</span>
                     <span>{l.label}</span>
-                    {lang === l.code && (
-                      <span className="material-symbols-outlined text-primary ml-auto" style={{ fontSize: "16px", fontVariationSettings: "'FILL' 1" }}>check</span>
-                    )}
+                    {lang === l.code && <span className="material-symbols-outlined text-primary ml-auto" style={{ fontSize: "16px", fontVariationSettings: "'FILL' 1" }}>check</span>}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-{/* User */}
-          <div className="relative flex items-center gap-3 pl-4 border-l border-outline-variant/20">
-            <button onClick={() => { setShowUser(!showUser); setShowLang(false); }} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="text-right">
+          {/* User */}
+          <div className="relative flex items-center gap-2 md:gap-3 md:pl-4 md:border-l border-outline-variant/20">
+            <button onClick={() => { setShowUser(!showUser); setShowLang(false); }} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="hidden md:block text-right">
                 <p className="text-sm font-semibold text-on-surface leading-none" style={{ fontFamily: "Manrope, sans-serif" }}>{displayName}</p>
                 <p className="text-[10px] text-outline uppercase tracking-wider mt-0.5" style={{ fontFamily: "Inter, sans-serif" }}>{t.topbar.clinicalDirector}</p>
               </div>
-              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                 {initials}
               </div>
             </button>
             {showUser && (
-              <div className="absolute top-full mt-2 right-0 w-44 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-xl z-50 py-1.5 overflow-hidden">
+              <div className="absolute top-full mt-2 right-0 w-48 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-xl z-50 py-1.5 overflow-hidden">
+                <div className="md:hidden px-4 py-2.5 border-b border-outline-variant/10">
+                  <p className="text-sm font-semibold text-on-surface">{displayName}</p>
+                  <p className="text-[10px] text-outline">{user?.email}</p>
+                </div>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-error hover:bg-error/5 transition-colors"

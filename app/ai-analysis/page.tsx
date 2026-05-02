@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
+import BottomNav from "../components/BottomNav";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
 import { useAuth } from "../lib/useAuth";
@@ -122,9 +123,9 @@ function AIAnalysisContent() {
   return (
     <div className="bg-surface min-h-screen">
       <Sidebar />
-      <main className="pl-64 min-h-screen">
+      <main className="md:pl-64 min-h-screen pb-20 md:pb-0">
         <TopBar />
-        <div className="p-8 max-w-6xl mx-auto">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto">
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-outline mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -140,17 +141,17 @@ function AIAnalysisContent() {
           </div>
 
           {/* Header */}
-          <div className="mb-8 flex justify-between items-end">
+          <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
             <div>
-              <h2 className="text-3xl font-extrabold text-on-surface tracking-tight" style={{ fontFamily: "Manrope, sans-serif" }}>{t.ai.title}</h2>
-              <p className="text-outline mt-1 text-sm">{t.ai.uploadFirstSub}</p>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight" style={{ fontFamily: "Manrope, sans-serif" }}>{t.ai.title}</h2>
+              <p className="text-outline mt-1 text-sm hidden md:block">{t.ai.uploadFirstSub}</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => router.back()} className="px-5 py-2.5 border border-outline-variant text-outline font-bold text-sm rounded-full hover:bg-surface-container-low transition-colors">{t.common.cancel}</button>
+              <button onClick={() => router.back()} className="px-4 md:px-5 py-2.5 border border-outline-variant text-outline font-bold text-sm rounded-full hover:bg-surface-container-low transition-colors">{t.common.cancel}</button>
               <button
                 onClick={handleSave}
                 disabled={!result || saving || saved || !selectedPatientId}
-                className="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="bg-primary text-white px-4 md:px-6 py-2.5 rounded-full font-bold text-sm hover:opacity-90 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {saving ? <><span className="material-symbols-outlined text-sm animate-spin" style={{ animationDuration: "1s" }}>progress_activity</span>{t.ai.saving}</>
                   : saved ? <><span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>{t.ai.saved}</>
@@ -180,9 +181,9 @@ function AIAnalysisContent() {
             )}
           </div>
 
-          <div className="grid grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             {/* Left: Upload */}
-            <div className="col-span-4 flex flex-col gap-5">
+            <div className="md:col-span-4 flex flex-col gap-5">
               <div
                 onDragOver={(e) => { if (!selectedPatientId || analysing) return; e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
@@ -253,7 +254,7 @@ function AIAnalysisContent() {
             </div>
 
             {/* Right: Results */}
-            <div className={`col-span-8 flex flex-col gap-4 transition-all duration-500 ${result ? "opacity-100" : analysing ? "opacity-30 pointer-events-none" : "opacity-20 pointer-events-none"}`}>
+            <div className={`md:col-span-8 flex flex-col gap-4 transition-all duration-500 ${result ? "opacity-100" : analysing ? "opacity-30 pointer-events-none" : "opacity-20 pointer-events-none"}`}>
 
               {/* Analysing placeholder */}
               {analysing && (
@@ -319,6 +320,7 @@ function AIAnalysisContent() {
         </div>
       </main>
       <Toasts toasts={toasts} remove={remove} />
+      <BottomNav />
     </div>
   );
 }
