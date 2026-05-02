@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
-import OnboardingTour from "../components/OnboardingTour";
 import Modal from "../components/Modal";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
@@ -376,7 +375,6 @@ export default function DashboardPage() {
         </span>
       </button>
 
-      <OnboardingTour />
     </div>
   );
 }

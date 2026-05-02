@@ -183,7 +183,7 @@ function AIAnalysisContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
             {/* Left: Upload */}
-            <div className="md:col-span-4 flex flex-col gap-5">
+            <div id="tour-upload-area" className="md:col-span-4 flex flex-col gap-5">
               <div
                 onDragOver={(e) => { if (!selectedPatientId || analysing) return; e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}

@@ -4,6 +4,7 @@ import "./globals.css";
 import { LanguageProvider } from "./lib/i18n";
 import { PHProvider } from "./lib/posthog";
 import PageView from "./components/PageView";
+import OnboardingTour from "./components/OnboardingTour";
 
 export const metadata: Metadata = {
   title: "Yocias",
@@ -39,6 +40,7 @@ export default function RootLayout({
         <PHProvider>
           <LanguageProvider>
             <PageView />
+            <OnboardingTour />
             {children}
           </LanguageProvider>
         </PHProvider>

@@ -98,7 +98,7 @@ export default function ReportsPage() {
         <div className="p-4 md:p-10 max-w-6xl mx-auto space-y-5 md:space-y-8">
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          <div id="tour-reports-stats" className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
             <StatCard label={t.reports.totalPatients} value={loading ? "…" : stats.total} icon="group" sub={`${stats.active} ${t.reports.activeCount}`} />
             <StatCard label={t.reports.totalMeasurements} value={loading ? "…" : stats.totalMeas} icon="straighten" sub={`${stats.measThisMonth} ${t.reports.thisMonth}`} />
             <StatCard label={t.reports.avgBmi} value={loading ? "…" : stats.avgBmi} icon="monitor_weight" sub={t.reports.allMeasurements} />
