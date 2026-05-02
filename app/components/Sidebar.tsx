@@ -9,9 +9,9 @@ export default function Sidebar() {
   const { t } = useI18n();
 
   const navItems = [
-    { href: "/dashboard", icon: "group", label: t.nav.clients, matchPaths: ["/dashboard", "/clients"] },
-    { href: "/ai-analysis", icon: "auto_awesome", label: t.nav.aiAnalysis, matchPaths: ["/ai-analysis"] },
-    { href: "/reports", icon: "assessment", label: t.nav.reports, matchPaths: ["/reports"] },
+    { href: "/dashboard", icon: "group", label: t.nav.clients, matchPaths: ["/dashboard", "/clients"], id: "tour-nav-clients" },
+    { href: "/ai-analysis", icon: "auto_awesome", label: t.nav.aiAnalysis, matchPaths: ["/ai-analysis"], id: "tour-nav-ai" },
+    { href: "/reports", icon: "assessment", label: t.nav.reports, matchPaths: ["/reports"], id: "tour-nav-reports" },
   ];
 
   const isActive = (matchPaths: string[]) =>
@@ -43,6 +43,7 @@ export default function Sidebar() {
           return (
             <Link
               key={item.href}
+              id={item.id}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                 active

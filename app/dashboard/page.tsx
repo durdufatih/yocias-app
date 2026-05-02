@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../components/Sidebar";
 import TopBar from "../components/TopBar";
 import BottomNav from "../components/BottomNav";
+import OnboardingTour from "../components/OnboardingTour";
 import Modal from "../components/Modal";
 import Toasts from "../components/Toast";
 import { useToast } from "../lib/useToast";
@@ -133,6 +134,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <button
+                id="tour-add-patient"
                 onClick={() => { posthog.capture("patient_add_started"); setShowNewPatient(true); }}
                 className="px-3 md:px-5 py-2 text-sm bg-primary text-white font-semibold rounded-lg flex items-center gap-2 active:scale-95 transition-all"
               >
@@ -184,7 +186,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Desktop: Table */}
-          <div className="hidden md:block bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+          <div id="tour-patient-table" className="hidden md:block bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant/10">
@@ -373,6 +375,8 @@ export default function DashboardPage() {
           person_add
         </span>
       </button>
+
+      <OnboardingTour />
     </div>
   );
 }
