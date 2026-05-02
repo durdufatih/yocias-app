@@ -28,13 +28,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <Script src="https://www.googletagmanager.com/gtag/js?id=G-HW4LW9PHX4" strategy="afterInteractive" />
-      <Script id="google-analytics" strategy="afterInteractive">{`
+      <Script src="https://www.googletagmanager.com/gtag/js?id=AW-965347290" strategy="afterInteractive" />
+      <Script id="google-tag" strategy="afterInteractive">{`
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-HW4LW9PHX4');
         gtag('config', 'AW-965347290');
+        gtag('config', 'G-HW4LW9PHX4');
       `}</Script>
       <body className="min-h-screen antialiased">
         <PHProvider>
