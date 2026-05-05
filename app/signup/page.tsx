@@ -111,12 +111,19 @@ export default function SignupPage() {
             </div>
           ) : (
             <>
-              <Link href="/" className="flex items-center gap-3 mb-10 lg:hidden">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "18px" }}>spa</span>
-                </div>
-                <span className="font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Yocias</span>
-              </Link>
+              <div className="flex items-center justify-between mb-10">
+                <Link href="/" className="flex items-center gap-3 lg:hidden">
+                  <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                    <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "18px" }}>spa</span>
+                  </div>
+                  <span className="font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Yocias</span>
+                </Link>
+                <div className="hidden lg:block" />
+                <Link href="/" className="flex items-center gap-1.5 text-sm text-outline hover:text-primary transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+                  <span className="material-symbols-outlined text-base">arrow_back</span>
+                  Ana Sayfa
+                </Link>
+              </div>
 
               {/* Step indicator */}
               <div className="flex items-center gap-3 mb-8">

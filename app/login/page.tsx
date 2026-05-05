@@ -74,12 +74,20 @@ export default function LoginPage() {
       {/* Right Panel */}
       <div className="flex-1 flex items-center justify-center px-8 py-12">
         <div className="w-full max-w-md">
-          <Link href="/" className="flex items-center gap-3 mb-10 lg:hidden">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "18px" }}>spa</span>
-            </div>
-            <span className="font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Yocias</span>
-          </Link>
+          {/* Top row: logo (mobile) + back link */}
+          <div className="flex items-center justify-between mb-10">
+            <Link href="/" className="flex items-center gap-3 lg:hidden">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: "18px" }}>spa</span>
+              </div>
+              <span className="font-bold text-on-surface" style={{ fontFamily: "Manrope, sans-serif" }}>Yocias</span>
+            </Link>
+            <div className="hidden lg:block" />
+            <Link href="/" className="flex items-center gap-1.5 text-sm text-outline hover:text-primary transition-colors" style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}>
+              <span className="material-symbols-outlined text-base">arrow_back</span>
+              Ana Sayfa
+            </Link>
+          </div>
 
           <h1 className="text-3xl font-extrabold text-on-surface mb-2" style={{ fontFamily: "Manrope, sans-serif" }}>{a.welcomeBack}</h1>
           <p className="text-outline text-sm mb-8">{a.signInSubtitle}</p>
