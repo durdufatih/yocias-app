@@ -40,11 +40,14 @@ export default function OnboardingTour() {
   useEffect(() => {
     const done = localStorage.getItem(DONE_KEY);
     if (done) return;
+    // Only activate when already on an app page (logged-in area)
+    const appRoutes = ["/dashboard", "/ai-analysis", "/reports", "/clients"];
+    if (!appRoutes.some((r) => pathname.startsWith(r))) return;
     const saved = parseInt(localStorage.getItem(STEP_KEY) ?? "0", 10);
     setStep(isNaN(saved) ? 0 : saved);
     setVisible(true);
     setIsMobile(window.innerWidth < 768);
-  }, []);
+  }, [pathname]);
 
   const resolveRect = useCallback(() => {
     const current = STEPS[step];
